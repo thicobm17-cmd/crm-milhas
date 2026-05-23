@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Gestor {
+  id        String   @id @default(cuid())
+  nome      String
+  email     String   @unique
+  senha     String
+  telefone  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  clientes   Cliente[]
+  emissoes   Emissao[]
+  transacoes Transacao[]
+  contas     ContaPrograma[]
+
+  @@map("gestores")
+}
+
+model Programa {
+  id        Int    @id @default(autoincrement())
+  nome      String
+  companhia String
+  cor       String @default("#6366f1")
+
+  contas   ContaPrograma[]
+  emissoes Emissao[]
+
+  @@map("programas")
+}
+
+model Cliente {
+  id             String    @id @default(cuid())
+  gestorId       String    @map("gestor_id")
+  nome           String
+  email          String?
+  telefone       String?
+  cpf            String?
+  dataNascimento DateTime? @map("data_nascimento")
+  observacoes    String?
+  feeMensal      Decimal   @default(0) @map("fee_mensal") @db.Decimal(10, 2)
+  feePorEmissao  Decimal   @default(0) @map("fee_por_emissao") @db.Decimal(10, 2)
+  metaEconomia   Decimal   @default(0) @map("meta_economia") @db.Decimal(12, 2)
+  ativo          Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  gestor     Gestor          @relation(fields: [gestorId], references: [id], onDelete: Cascade)
+  contas     ContaPrograma[]
+  emissoes   Emissao[]
+  transacoes Transacao[]
+
+  @@map("clientes")
+}
+
+model ContaPrograma {
+  id                     String    @id @default(cuid())
+  clienteId              String    @map("cliente_id")
+  gestorId               String    @map("gestor_id")
+  programaId             Int       @map("programa_id")
+  numeroConta            String?   @map("numero_conta")
+  saldoAtual             Int       @default(0) @map("saldo_atual")
+  ultimaAtualizacaoSaldo DateTime? @map("ultima_atualizacao_saldo")
+  createdAt              DateTime  @default(now()) @map("created_at")
+
+  cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  gestor   Gestor   @relation(fields: [gestorId], references: [id], onDelete: Cascade)
+  programa Programa @relation(fields: [programaId], references: [id])
+
+  @@map("contas_programas")
+}
+
+model Emissao {
+  id               String   @id @default(cuid())
+  gestorId         String   @map("gestor_id")
+  clienteId        String   @map("cliente_id")
+  programaId       Int?     @map("programa_id")
+  origem           String
+  destino          String
+  dataVoo          DateTime @map("data_voo")
+  passageiros      Int      @default(1)
+  milhasUtilizadas Int      @default(0) @map("milhas_utilizadas")
+  precoMercado     Decimal  @default(0) @map("preco_mercado") @db.Decimal(10, 2)
+  taxasPagas       Decimal  @default(0) @map("taxas_pagas") @db.Decimal(10, 2)
+  feeCobrado       Decimal  @default(0) @map("fee_cobrado") @db.Decimal(10, 2)
+  classe           String   @default("Econômica")
+  status           String   @default("confirmada")
+  observacoes      String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  gestor     Gestor      @relation(fields: [gestorId], references: [id], onDelete: Cascade)
+  cliente    Cliente     @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  programa   Programa?   @relation(fields: [programaId], references: [id])
+  transacoes Transacao[]
+
+  @@map("emissoes")
+}
+
+model Transacao {
+  id             String    @id @default(cuid())
+  gestorId       String    @map("gestor_id")
+  clienteId      String?   @map("cliente_id")
+  emissaoId      String?   @map("emissao_id")
+  tipo           String
+  descricao      String
+  valor          Decimal   @db.Decimal(10, 2)
+  dataVencimento DateTime? @map("data_vencimento")
+  dataPagamento  DateTime? @map("data_pagamento")
+  pago           Boolean   @default(false)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  gestor  Gestor   @relation(fields: [gestorId], references: [id], onDelete: Cascade)
+  cliente Cliente? @relation(fields: [clienteId], references: [id])
+  emissao Emissao? @relation(fields: [emissaoId], references: [id])
+
+  @@map("transacoes")
+}
