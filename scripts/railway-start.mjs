@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import { createServer, request } from 'node:http'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -6,6 +7,8 @@ const isWindows = process.platform === 'win32'
 const npxCommand = isWindows ? 'npx.cmd' : 'npx'
 const scriptDir = dirname(fileURLToPath(import.meta.url))
 const nextBin = resolve(scriptDir, '../node_modules/next/dist/bin/next')
+const appPort = process.env.PORT || '3000'
+const publicAliasPort = '3000'
 
 function runOptionalStep(label, command, args, timeoutMs = 30_000) {
   return new Promise((resolve) => {
@@ -60,12 +63,55 @@ async function syncDatabaseInBackground() {
   await runOptionalStep('Prisma seed', npxCommand, ['prisma', 'db', 'seed'])
 }
 
-console.log('[startup] Starting Next.js...')
+function startPublicPortProxy(fromPort, toPort) {
+  if (fromPort === toPort) return undefined
 
-const app = spawn(process.execPath, [nextBin, 'start', '-H', '0.0.0.0', '-p', '3000'], {
+  const server = createServer((clientReq, clientRes) => {
+    const proxyReq = request(
+      {
+        hostname: '127.0.0.1',
+        port: Number(toPort),
+        method: clientReq.method,
+        path: clientReq.url,
+        headers: clientReq.headers,
+      },
+      (proxyRes) => {
+        clientRes.writeHead(proxyRes.statusCode ?? 502, proxyRes.statusMessage, proxyRes.headers)
+        proxyRes.pipe(clientRes)
+      },
+    )
+
+    proxyReq.on('error', (error) => {
+      console.warn(`[startup] Public port proxy failed: ${error.message}`)
+
+      if (!clientRes.headersSent) {
+        clientRes.writeHead(502, { 'content-type': 'application/json' })
+      }
+
+      clientRes.end(JSON.stringify({ status: 'error', message: 'Application proxy failed' }))
+    })
+
+    clientReq.pipe(proxyReq)
+  })
+
+  server.on('error', (error) => {
+    console.warn(`[startup] Could not bind public alias port ${fromPort}: ${error.message}`)
+  })
+
+  server.listen(Number(fromPort), '0.0.0.0', () => {
+    console.log(`[startup] Public alias proxy listening on 0.0.0.0:${fromPort} -> 127.0.0.1:${toPort}`)
+  })
+
+  return server
+}
+
+console.log(`[startup] Starting Next.js on 0.0.0.0:${appPort}...`)
+
+const app = spawn(process.execPath, [nextBin, 'start', '-H', '0.0.0.0', '-p', appPort], {
   stdio: 'inherit',
   env: process.env,
 })
+const publicProxy = startPublicPortProxy(publicAliasPort, appPort)
 
 setTimeout(() => {
   syncDatabaseInBackground().catch((error) => {
@@ -74,6 +120,7 @@ setTimeout(() => {
 }, 2_000)
 
 function forward(signal) {
+  publicProxy?.close()
   if (!app.killed) app.kill(signal)
 }
 
@@ -81,6 +128,8 @@ process.on('SIGINT', () => forward('SIGINT'))
 process.on('SIGTERM', () => forward('SIGTERM'))
 
 app.on('exit', (code, signal) => {
+  publicProxy?.close()
+
   if (signal) {
     console.log(`[startup] Next.js stopped by signal ${signal}.`)
     process.exit(0)
