@@ -18,9 +18,72 @@ export async function POST(request: NextRequest) {
       valor: parseFloat(valor),
       clienteId: clienteId || null,
       dataVencimento: dataVencimento ? new Date(dataVencimento) : null,
-      pago: pago === 'true',
+      pago: pago === 'true' || pago === true,
+      dataPagamento: pago === 'true' || pago === true ? new Date() : null,
     },
   })
 
   return NextResponse.json({ id: transacao.id })
+}
+
+export async function PATCH(request: NextRequest) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+
+  const body = await request.json()
+  const { id, action } = body
+  if (!id) return NextResponse.json({ error: 'Transacao nao informada.' }, { status: 400 })
+
+  const existente = await prisma.transacao.findFirst({ where: { id, gestorId: session.user.id } })
+  if (!existente) return NextResponse.json({ error: 'Transacao nao encontrada.' }, { status: 404 })
+
+  if (action === 'marcar_pago') {
+    // Ao confirmar pagamento, opcionalmente soma periodo de acesso ao produto do cliente (1 a 12 meses)
+    const meses = parseInt(body.mesesAcesso) || 0
+    const transacao = await prisma.transacao.update({
+      where: { id },
+      data: { pago: true, dataPagamento: new Date() },
+    })
+
+    if (meses > 0 && existente.clienteId) {
+      const cliente = await prisma.cliente.findUnique({ where: { id: existente.clienteId } })
+      const base = cliente?.acessoFim && cliente.acessoFim > new Date() ? new Date(cliente.acessoFim) : new Date()
+      const acessoFim = new Date(base)
+      acessoFim.setMonth(acessoFim.getMonth() + meses)
+      await prisma.cliente.update({
+        where: { id: existente.clienteId },
+        data: {
+          acessoInicio: cliente?.acessoInicio ?? new Date(),
+          acessoFim,
+        },
+      })
+    }
+
+    return NextResponse.json({ id: transacao.id, pago: true })
+  }
+
+  if (action === 'marcar_pendente') {
+    const transacao = await prisma.transacao.update({
+      where: { id },
+      data: { pago: false, dataPagamento: null },
+    })
+    return NextResponse.json({ id: transacao.id, pago: false })
+  }
+
+  return NextResponse.json({ error: 'Acao invalida.' }, { status: 400 })
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await auth()
+  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+
+  const { searchParams } = new URL(request.url)
+  const id = searchParams.get('id')
+  if (!id) return NextResponse.json({ error: 'Transacao nao informada.' }, { status: 400 })
+
+  const existente = await prisma.transacao.findFirst({ where: { id, gestorId: session.user.id } })
+  if (!existente) return NextResponse.json({ error: 'Transacao nao encontrada.' }, { status: 404 })
+
+  await prisma.transacao.delete({ where: { id } })
+  return NextResponse.json({ ok: true })
 }

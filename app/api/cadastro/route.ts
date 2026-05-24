@@ -23,16 +23,23 @@ export async function POST(request: NextRequest) {
 
     const senha = await bcrypt.hash(password, 12)
 
+    // Bootstrap: o primeiro gestor cadastrado vira CEO autorizado.
+    // Os demais entram na fila como GESTOR aguardando aprovacao do CEO.
+    const totalGestores = await prisma.gestor.count()
+    const ehPrimeiro = totalGestores === 0
+
     await prisma.gestor.create({
       data: {
         nome: String(nome).trim(),
         email: emailNormalizado,
         senha,
         telefone: telefone ? String(telefone).trim() : null,
+        cargo: ehPrimeiro ? 'CEO' : 'GESTOR',
+        autorizado: ehPrimeiro,
       },
     })
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, autorizado: ehPrimeiro })
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
       return NextResponse.json({ error: 'Este email ja esta em uso.' }, { status: 400 })

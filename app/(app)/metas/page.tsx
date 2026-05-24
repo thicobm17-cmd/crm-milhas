@@ -1,15 +1,23 @@
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
-import { getClientesComResumo } from '@/lib/queries'
+import { getClientesComResumo, getMetaPeriodo, periodoAtual, nomesMeses } from '@/lib/queries'
 import { formatCurrency } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { MetaForm } from '@/components/financeiro/MetaForm'
 import { CalendarDays, Target, Trophy } from 'lucide-react'
+
+export const dynamic = 'force-dynamic'
 
 export default async function MetasPage() {
   const session = await auth()
-  const todosClientes = await getClientesComResumo(session!.user.id)
+  const periodo = periodoAtual()
+  const labelMes = `${nomesMeses[periodo.mes - 1]}/${periodo.ano}`
+  const [todosClientes, metaMes] = await Promise.all([
+    getClientesComResumo(session!.user.id),
+    getMetaPeriodo(session!.user.id, periodo),
+  ])
   const clientes = todosClientes.filter(c => c.metaEconomia > 0)
 
   const totalMeta = clientes.reduce((acc, c) => acc + c.metaEconomia, 0)
@@ -53,9 +61,11 @@ export default async function MetasPage() {
           <CardTitle className="text-[#f4d59a]">Meta do mes para o financeiro</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <p className="text-sm text-[#e8d3ab]/75">A meta mensal alimenta automaticamente a linha preta do grafico do Financeiro.</p>
-            <Badge className="bg-[#d7ad68] text-[#081613]">Meta atual demonstrativa: {formatCurrency(50000)}</Badge>
+          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <p className="max-w-md text-sm text-[#e8d3ab]/75">A meta de {labelMes} alimenta automaticamente o painel e a barra de progresso do Financeiro.</p>
+            <div className="w-full md:max-w-xs">
+              <MetaForm mes={periodo.mes} ano={periodo.ano} valorAtual={metaMes} label={labelMes} />
+            </div>
           </div>
         </CardContent>
       </Card>

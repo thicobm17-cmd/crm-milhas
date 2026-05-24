@@ -1,16 +1,40 @@
+import Link from 'next/link'
+import { auth } from '@/lib/auth'
+import { getClientesComResumo } from '@/lib/queries'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils'
-import { Clock3, FileSearch, RefreshCw } from 'lucide-react'
+import { Clock3, FileSearch } from 'lucide-react'
 
-const renewals = [
-  { client: 'Familia Europa 2026', plan: 'Gestao de Viagens Completa', expires: 'Vence em 8 dias', economy: 18400, status: 'A renovar' },
-  { client: 'Empresario Premium', plan: 'Consultoria + Acompanhamento', expires: 'Vencido ha 2 dias', economy: 5200, status: 'Vencido' },
-  { client: 'Casal Lua de Mel', plan: 'Gestao de Viagens Completa', expires: 'Vence em 21 dias', economy: 12750, status: 'Monitorar' },
-]
+export const dynamic = 'force-dynamic'
 
-export default function RenovacoesPage() {
+function statusRenovacao(acessoFim: Date | null) {
+  if (!acessoFim) return null
+  const hoje = new Date()
+  hoje.setHours(0, 0, 0, 0)
+  const fim = new Date(acessoFim)
+  fim.setHours(0, 0, 0, 0)
+  const dias = Math.round((fim.getTime() - hoje.getTime()) / 86400000)
+  if (dias < 0) return { label: `Vencido ha ${Math.abs(dias)} dias`, status: 'Vencido', cor: 'bg-red-100 text-red-800', ordem: 0 }
+  if (dias <= 30) return { label: dias === 0 ? 'Vence hoje' : `Vence em ${dias} dias`, status: 'A renovar', cor: 'bg-amber-100 text-amber-800', ordem: 1 }
+  return { label: `Vence em ${dias} dias`, status: 'Monitorar', cor: 'bg-stone-100 text-stone-700', ordem: 2 }
+}
+
+export default async function RenovacoesPage() {
+  const session = await auth()
+  const clientes = await getClientesComResumo(session!.user.id)
+
+  const renovacoes = clientes
+    .filter(c => c.acessoFim)
+    .map(c => ({ cliente: c, info: statusRenovacao(c.acessoFim) }))
+    .filter((r): r is { cliente: typeof r.cliente; info: NonNullable<ReturnType<typeof statusRenovacao>> } => r.info !== null)
+    .sort((a, b) => a.info.ordem - b.info.ordem || (a.cliente.acessoFim!.getTime() - b.cliente.acessoFim!.getTime()))
+
+  const aRenovar = renovacoes.filter(r => r.info.status === 'A renovar').length
+  const vencidos = renovacoes.filter(r => r.info.status === 'Vencido').length
+  const economiaContratos = renovacoes.reduce((acc, r) => acc + r.cliente.economiaTotal, 0)
+
   return (
     <div className="space-y-6">
       <div>
@@ -22,20 +46,20 @@ export default function RenovacoesPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="atlas-panel">
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">A renovar</p>
-            <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">2</p>
+            <p className="text-sm text-muted-foreground">A renovar (proximos 30 dias)</p>
+            <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">{aRenovar}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
           <CardContent className="p-5">
             <p className="text-sm text-muted-foreground">Vencidos</p>
-            <p className="mt-2 text-3xl font-semibold text-red-700">1</p>
+            <p className="mt-2 text-3xl font-semibold text-red-700">{vencidos}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
           <CardContent className="p-5">
-            <p className="text-sm text-muted-foreground">Economia em contratos</p>
-            <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">{formatCurrency(36350)}</p>
+            <p className="text-sm text-muted-foreground">Economia gerada (carteira)</p>
+            <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">{formatCurrency(economiaContratos)}</p>
           </CardContent>
         </Card>
       </div>
@@ -45,27 +69,32 @@ export default function RenovacoesPage() {
           <CardTitle>Fila de renovacoes</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {renewals.map((renewal) => (
-            <div key={renewal.client} className="grid gap-4 rounded-md border border-[#d7ad68]/25 bg-white/65 p-4 lg:grid-cols-[1fr_0.8fr_0.7fr_auto] lg:items-center">
+          {renovacoes.length > 0 ? renovacoes.map(({ cliente, info }) => (
+            <div key={cliente.id} className="grid gap-4 rounded-md border border-[#d7ad68]/25 bg-white/65 p-4 lg:grid-cols-[1fr_0.8fr_0.7fr_auto] lg:items-center">
               <div>
-                <p className="font-medium text-[#11231f]">{renewal.client}</p>
-                <p className="text-sm text-muted-foreground">{renewal.plan}</p>
+                <p className="font-medium text-[#11231f]">{cliente.nome}</p>
+                <p className="text-sm text-muted-foreground">{cliente.produtoContratado || 'Produto Atlas'}</p>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Clock3 size={16} className="text-[#8f7040]" />
-                {renewal.expires}
+                {info.label}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Economia no periodo</p>
-                <p className="font-semibold text-emerald-700">{formatCurrency(renewal.economy)}</p>
+                <p className="text-xs text-muted-foreground">Economia gerada</p>
+                <p className="font-semibold text-emerald-700">{formatCurrency(cliente.economiaTotal)}</p>
               </div>
-              <div className="flex gap-2">
-                <Badge className={renewal.status === 'Vencido' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}>{renewal.status}</Badge>
-                <Button size="icon-sm" variant="outline" title="Ver historico"><FileSearch size={15} /></Button>
-                <Button size="icon-sm" className="bg-[#0b3b31] text-[#f4d59a]" title="Renovar"><RefreshCw size={15} /></Button>
+              <div className="flex items-center gap-2">
+                <Badge className={info.cor}>{info.status}</Badge>
+                <Link href={`/clientes/${cliente.id}`}>
+                  <Button size="icon-sm" variant="outline" title="Ver historico"><FileSearch size={15} /></Button>
+                </Link>
               </div>
             </div>
-          ))}
+          )) : (
+            <p className="py-10 text-center text-sm text-muted-foreground">
+              Nenhum cliente com periodo de acesso definido. Defina o acesso ao confirmar o pagamento no Financeiro.
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -7,6 +7,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Plus, TrendingUp, Plane } from 'lucide-react'
 import Link from 'next/link'
+import { EmissaoActions } from '@/components/emissoes/EmissaoActions'
+
+export const dynamic = 'force-dynamic'
 
 export default async function EmissoesPage() {
   const session = await auth()
@@ -75,12 +78,12 @@ export default async function EmissoesPage() {
                         </p>
                       </div>
                     </div>
-                    <div className="text-right space-y-1">
-                      <p className="font-bold text-green-600">+{formatCurrency(eco)}</p>
-                      <p className="text-xs text-slate-500">{formatMilhas(e.milhasUtilizadas)}</p>
-                      <Badge variant={e.status === 'confirmada' ? 'default' : e.status === 'cancelada' ? 'destructive' : 'secondary'} className="text-xs">
-                        {e.status}
-                      </Badge>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right space-y-1">
+                        <p className="font-bold text-green-600">+{formatCurrency(eco)}</p>
+                        <p className="text-xs text-slate-500">{formatMilhas(e.milhasUtilizadas)}</p>
+                      </div>
+                      <EmissaoActions id={e.id} status={e.status} />
                     </div>
                   </div>
                 )

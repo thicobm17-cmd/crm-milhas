@@ -17,6 +17,7 @@ export default function CadastroPage() {
   const [telefone, setTelefone] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [pending, setPending] = useState(false)
   const router = useRouter()
 
   async function handleCadastro(e: React.FormEvent) {
@@ -36,6 +37,13 @@ export default function CadastroPage() {
         throw new Error(data.error ?? 'Erro ao criar conta.')
       }
 
+      // Quando nao e o primeiro usuario, a conta fica pendente de aprovacao do CEO
+      if (data.autorizado === false) {
+        setPending(true)
+        setLoading(false)
+        return
+      }
+
       const result = await signIn('credentials', { email, password, redirect: false })
       if (result?.error) {
         throw new Error('Conta criada, mas nao foi possivel entrar automaticamente. Tente entrar pelo login.')
@@ -47,6 +55,26 @@ export default function CadastroPage() {
       setError(err instanceof Error ? err.message : 'Erro ao criar conta.')
       setLoading(false)
     }
+  }
+
+  if (pending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#061411] p-4">
+        <Card className="w-full max-w-md border-[#d7ad68]/25 bg-[#fffcf5] shadow-2xl">
+          <CardHeader>
+            <CardTitle>Conta criada — aguardando aprovacao</CardTitle>
+            <CardDescription>
+              Sua conta foi registrada e esta na fila de aprovacao do CEO. Voce podera entrar assim que o acesso for autorizado.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/login">
+              <Button className="w-full bg-[#0b3b31] text-[#f4d59a] hover:bg-[#12483d]">Voltar para o login</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (

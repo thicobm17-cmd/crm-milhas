@@ -270,6 +270,7 @@ model Transacao {
 model MetaMensal {
   id        String   @id @default(cuid())
   empresaId String?  @map("empresa_id")
+  gestorId  String?  @map("gestor_id")
   mes       Int
   ano       Int
   valor     Decimal  @db.Decimal(12, 2)
@@ -277,7 +278,7 @@ model MetaMensal {
 
   empresa Empresa? @relation(fields: [empresaId], references: [id])
 
-  @@unique([empresaId, mes, ano])
+  @@unique([gestorId, mes, ano])
   @@map("metas_mensais")
 }
 

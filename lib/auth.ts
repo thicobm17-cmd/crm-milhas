@@ -30,6 +30,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         )
         if (!senhaCorreta) return null
 
+        // Gestores aguardando aprovacao do CEO nao podem entrar
+        if (!gestor.autorizado) return null
+
         return { id: gestor.id, name: gestor.nome, email: gestor.email }
       },
     }),

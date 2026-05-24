@@ -64,6 +64,7 @@ export function NovaTransacaoForm({ clientes }: Props) {
                   <SelectItem value="receita_emissao">Receita de emissao</SelectItem>
                   <SelectItem value="compra_milhas">Compra de Milhas</SelectItem>
                   <SelectItem value="despesa">Despesa</SelectItem>
+                  <SelectItem value="imposto">Imposto de renda</SelectItem>
                 </SelectContent>
               </Select>
             </div>

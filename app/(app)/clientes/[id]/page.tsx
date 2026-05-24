@@ -7,13 +7,33 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ArrowLeft, Plane, DollarSign, Target, Phone, Mail, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Plane, DollarSign, Target, Phone, Mail, TrendingUp, Hotel, Map, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import { AdicionarContaForm } from '@/components/clientes/AdicionarContaForm'
+import { ClienteActions } from '@/components/clientes/ClienteActions'
+import { ContaActions } from '@/components/clientes/ContaActions'
+import { AdicionarProdutoForm } from '@/components/clientes/AdicionarProdutoForm'
+import { ProdutoActions } from '@/components/clientes/ProdutoActions'
 import { notFound } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 interface Props {
   params: Promise<{ id: string }>
+}
+
+const tipoIcones: Record<string, typeof Plane> = {
+  PASSAGEM: Plane,
+  HOTEL: Hotel,
+  PASSEIO: Map,
+  SEGURO: ShieldCheck,
+}
+
+const tipoLabels: Record<string, string> = {
+  PASSAGEM: 'Passagem',
+  HOTEL: 'Hotel',
+  PASSEIO: 'Passeio',
+  SEGURO: 'Seguro',
 }
 
 export default async function ClienteDetalhePage({ params }: Props) {
@@ -21,7 +41,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const session = await auth()
   const gestorId = session!.user.id
 
-  const [cliente, contas, emissoes, programas] = await Promise.all([
+  const [cliente, contas, emissoes, produtos, programas, gestores] = await Promise.all([
     prisma.cliente.findFirst({ where: { id, gestorId } }),
     prisma.contaPrograma.findMany({
       where: { clienteId: id, gestorId },
@@ -32,13 +52,21 @@ export default async function ClienteDetalhePage({ params }: Props) {
       include: { programa: true },
       orderBy: { dataVoo: 'desc' },
     }),
+    prisma.produtoCliente.findMany({
+      where: { clienteId: id, cliente: { gestorId } },
+      include: { responsavel: { select: { nome: true } } },
+      orderBy: { dataSolicitacao: 'desc' },
+    }),
     getProgramas(),
+    prisma.gestor.findMany({ where: { autorizado: true }, select: { id: true, nome: true }, orderBy: { nome: 'asc' } }),
   ])
 
   if (!cliente) notFound()
 
   const confirmadas = emissoes.filter(e => e.status === 'confirmada')
-  const economiaTotal = confirmadas.reduce((acc, e) => acc + calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado), 0)
+  const economiaEmissoes = confirmadas.reduce((acc, e) => acc + calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado), 0)
+  const economiaProdutos = produtos.filter(p => p.status === 'EMITIDO').reduce((acc, p) => acc + (toNum(p.precoReferencia) - toNum(p.precoAtlas)), 0)
+  const economiaTotal = economiaEmissoes + economiaProdutos
   const totalMilhas = confirmadas.reduce((acc, e) => acc + e.milhasUtilizadas, 0)
   const metaEconomia = toNum(cliente.metaEconomia)
   const roi = metaEconomia > 0 ? ((economiaTotal - metaEconomia) / metaEconomia) * 100 : 0
@@ -46,16 +74,25 @@ export default async function ClienteDetalhePage({ params }: Props) {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Link href="/clientes">
           <Button variant="ghost" size="sm"><ArrowLeft size={16} className="mr-1" /> Clientes</Button>
         </Link>
         <h1 className="text-2xl font-bold text-slate-900 flex-1">{cliente.nome}</h1>
         <Badge variant={cliente.ativo ? 'default' : 'secondary'}>{cliente.ativo ? 'Ativo' : 'Inativo'}</Badge>
-        <Link href={`/emissoes/nova?cliente=${id}`}>
-          <Button size="sm" className="flex items-center gap-2"><Plane size={14} />Nova emissão</Button>
-        </Link>
       </div>
+
+      <ClienteActions cliente={{
+        id: cliente.id,
+        nome: cliente.nome,
+        email: cliente.email,
+        telefone: cliente.telefone,
+        cpf: cliente.cpf,
+        produtoContratado: cliente.produtoContratado,
+        metaEconomia,
+        observacoes: cliente.observacoes,
+        ativo: cliente.ativo,
+      }} />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
@@ -64,22 +101,13 @@ export default async function ClienteDetalhePage({ params }: Props) {
             {cliente.email && <div className="flex items-center gap-2 text-sm text-slate-600"><Mail size={14} /> {cliente.email}</div>}
             {cliente.telefone && <div className="flex items-center gap-2 text-sm text-slate-600"><Phone size={14} /> {cliente.telefone}</div>}
             {cliente.produtoContratado && (
-              <p className="text-sm">
-                <span className="text-slate-500">Produto:</span>{' '}
-                <span className="font-medium">{cliente.produtoContratado}</span>
-              </p>
+              <p className="text-sm"><span className="text-slate-500">Produto:</span>{' '}<span className="font-medium">{cliente.produtoContratado}</span></p>
             )}
             {metaEconomia > 0 && (
-              <p className="text-sm">
-                <span className="text-slate-500">Valor investido:</span>{' '}
-                <span className="font-medium">{formatCurrency(metaEconomia)}</span>
-              </p>
+              <p className="text-sm"><span className="text-slate-500">Valor investido:</span>{' '}<span className="font-medium">{formatCurrency(metaEconomia)}</span></p>
             )}
             {cliente.acessoFim && (
-              <p className="text-sm">
-                <span className="text-slate-500">Acesso ate:</span>{' '}
-                <span className="font-medium">{new Date(cliente.acessoFim).toLocaleDateString('pt-BR')}</span>
-              </p>
+              <p className="text-sm"><span className="text-slate-500">Acesso ate:</span>{' '}<span className="font-medium">{new Date(cliente.acessoFim).toLocaleDateString('pt-BR')}</span></p>
             )}
           </CardContent>
         </Card>
@@ -95,8 +123,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
         <Card className="border-0 shadow-sm">
           <CardContent className="p-5 text-center">
             <Plane className="text-blue-500 mx-auto mb-2" size={22} />
-            <p className="text-xs text-slate-500">Emissões</p>
-            <p className="text-xl font-bold">{confirmadas.length}</p>
+            <p className="text-xs text-slate-500">Produtos</p>
+            <p className="text-xl font-bold">{confirmadas.length + produtos.length}</p>
             <p className="text-xs text-slate-400">{formatMilhas(totalMilhas)}</p>
           </CardContent>
         </Card>
@@ -122,17 +150,70 @@ export default async function ClienteDetalhePage({ params }: Props) {
               <span className="font-medium">Meta: {formatCurrency(metaEconomia)}</span>
             </div>
             <Progress value={progresso} className="h-3" />
-            <p className="text-xs text-slate-500 mt-1">{progresso.toFixed(1)}% concluído</p>
+            <p className="text-xs text-slate-500 mt-1">{progresso.toFixed(1)}% concluido</p>
           </CardContent>
         </Card>
       )}
 
-      <Tabs defaultValue="programas">
+      <Tabs defaultValue="produtos">
         <TabsList>
-          <TabsTrigger value="programas">Programas de Fidelidade</TabsTrigger>
-          <TabsTrigger value="emissoes">Histórico de Emissões</TabsTrigger>
+          <TabsTrigger value="produtos">Produtos de Viagem</TabsTrigger>
+          <TabsTrigger value="programas">Programas de Milhas</TabsTrigger>
+          <TabsTrigger value="emissoes">Emissoes (legado)</TabsTrigger>
         </TabsList>
 
+        {/* PRODUTOS: Passagem / Hotel / Passeio / Seguro */}
+        <TabsContent value="produtos" className="mt-4 space-y-4">
+          <div className="flex justify-end">
+            <AdicionarProdutoForm clienteId={id} gestores={gestores} />
+          </div>
+          {produtos.length > 0 ? (
+            <div className="space-y-2">
+              {produtos.map(p => {
+                const Icon = tipoIcones[p.tipo] ?? Plane
+                const economia = toNum(p.precoReferencia) - toNum(p.precoAtlas)
+                return (
+                  <Card key={p.id} className="border-0 shadow-sm">
+                    <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex size-9 items-center justify-center rounded-md bg-[#0b3b31]/10 text-[#0b3b31]"><Icon size={16} /></div>
+                        <div>
+                          <p className="font-medium">
+                            {tipoLabels[p.tipo] ?? p.tipo}
+                            {p.origem && p.destino ? ` · ${p.origem} → ${p.destino}` : ''}
+                            {p.local ? ` · ${p.local}` : ''}
+                            {p.nome ? ` · ${p.nome}` : ''}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            {p.dataInicio ? new Date(p.dataInicio).toLocaleDateString('pt-BR') : 'sem data'}
+                            {p.responsavel?.nome ? ` · resp. ${p.responsavel.nome}` : ''}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-emerald-700">+{formatCurrency(economia)}</p>
+                          <Badge className={p.status === 'EMITIDO' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>
+                            {p.status === 'EMITIDO' ? 'Emitido' : 'Em cotacao'}
+                          </Badge>
+                        </div>
+                        <ProdutoActions id={p.id} status={p.status} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          ) : (
+            <Card className="border-0 shadow-sm">
+              <CardContent className="py-12 text-center text-slate-400">
+                Nenhum produto cadastrado. Adicione passagens, hoteis, passeios e seguros.
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* PROGRAMAS DE MILHAS */}
         <TabsContent value="programas" className="mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {contas.map(conta => (
@@ -146,9 +227,12 @@ export default async function ClienteDetalhePage({ params }: Props) {
                         {conta.numeroConta && <p className="text-xs text-slate-500">Conta: {conta.numeroConta}</p>}
                       </div>
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold text-blue-600">{new Intl.NumberFormat('pt-BR').format(conta.saldoAtual)}</p>
-                      <p className="text-xs text-slate-500">milhas</p>
+                    <div className="flex items-center gap-2">
+                      <div className="text-right">
+                        <p className="font-bold text-blue-600">{new Intl.NumberFormat('pt-BR').format(conta.saldoAtual)}</p>
+                        <p className="text-xs text-slate-500">milhas</p>
+                      </div>
+                      <ContaActions id={conta.id} saldoAtual={conta.saldoAtual} numeroConta={conta.numeroConta} />
                     </div>
                   </div>
                   {conta.ultimaAtualizacaoSaldo && (
@@ -163,6 +247,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
           </div>
         </TabsContent>
 
+        {/* EMISSOES LEGADO */}
         <TabsContent value="emissoes" className="mt-4">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">
@@ -184,7 +269,6 @@ export default async function ClienteDetalhePage({ params }: Props) {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-green-600">+{formatCurrency(eco)}</p>
-                          <p className="text-xs text-slate-500">mercado: {formatCurrency(toNum(e.precoMercado))}</p>
                           <Badge variant={e.status === 'confirmada' ? 'default' : e.status === 'cancelada' ? 'destructive' : 'secondary'} className="text-xs mt-1">
                             {e.status}
                           </Badge>
@@ -195,10 +279,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
                 </div>
               ) : (
                 <div className="py-12 text-center text-slate-400">
-                  <p>Nenhuma emissão ainda.</p>
-                  <Link href={`/emissoes/nova?cliente=${id}`} className="mt-3 inline-block">
-                    <Button size="sm" variant="outline">Registrar emissão</Button>
-                  </Link>
+                  <p>Nenhuma emissao no sistema legado.</p>
                 </div>
               )}
             </CardContent>
