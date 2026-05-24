@@ -14,7 +14,6 @@ export default async function MetasPage() {
 
   const totalMeta = clientes.reduce((acc, c) => acc + c.metaEconomia, 0)
   const totalEconomia = clientes.reduce((acc, c) => acc + c.economiaTotal, 0)
-  const progressoGeral = totalMeta > 0 ? Math.min((totalEconomia / totalMeta) * 100, 100) : 0
   const clientesAcima100 = clientes.filter(c => c.economiaTotal >= c.metaEconomia).length
 
   return (

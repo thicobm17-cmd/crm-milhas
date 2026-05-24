@@ -24,17 +24,19 @@ export default async function FinanceiroPage() {
     }),
   ])
 
-  const receitas = transacoes.filter(t => ['receita', 'fee_mensal', 'fee_emissao'].includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
+  const receitaTipos = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
+  const receitas = transacoes.filter(t => receitaTipos.includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
   const despesas = transacoes.filter(t => ['despesa', 'compra_milhas'].includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
-  const pendentesReceber = transacoes.filter(t => ['receita', 'fee_mensal', 'fee_emissao'].includes(t.tipo) && !t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
+  const pendentesReceber = transacoes.filter(t => receitaTipos.includes(t.tipo) && !t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
   const lucroLiquido = receitas - despesas
   const imposto = receitas * 0.15
   const values = [receitas, despesas, lucroLiquido, 50000]
 
   const tipoLabels: Record<string, string> = {
-    receita: 'Receita',
-    fee_mensal: 'Fee Mensal',
-    fee_emissao: 'Fee Emissao',
+    receita: 'Produto contratado / receita',
+    receita_emissao: 'Receita de emissao',
+    fee_mensal: 'Produto contratado',
+    fee_emissao: 'Receita de emissao',
     despesa: 'Despesa',
     compra_milhas: 'Compra de Milhas',
   }
@@ -105,7 +107,7 @@ export default async function FinanceiroPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           {transacoes.length > 0 ? transacoes.map((t) => {
-            const isReceita = ['receita', 'fee_mensal', 'fee_emissao'].includes(t.tipo)
+            const isReceita = receitaTipos.includes(t.tipo)
             return (
               <div key={t.id} className="grid gap-3 rounded-md border border-[#d7ad68]/25 bg-white/65 p-3 md:grid-cols-[1fr_auto_auto] md:items-center">
                 <div>

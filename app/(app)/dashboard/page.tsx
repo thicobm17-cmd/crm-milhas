@@ -8,7 +8,6 @@ import { formatCurrency, formatMilhas } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
 import { Bell, CheckCircle2, Clock3, Plane, TrendingUp } from 'lucide-react'
 
@@ -34,7 +33,8 @@ export default async function DashboardPage() {
   const totalEconomia = clientes.reduce((acc, c) => acc + c.economiaTotal, 0)
   const clientesAtivos = clientes.filter(c => c.ativo).length
   const clientesMeta = clientes.filter(c => c.metaEconomia > 0 && c.economiaTotal >= c.metaEconomia).length
-  const faturamento = transacoes.filter(t => ['receita', 'fee_mensal', 'fee_emissao'].includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
+  const tiposReceita = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
+  const faturamento = transacoes.filter(t => tiposReceita.includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
   const pendentes = emissoes.filter(e => e.status !== 'confirmada')
   const checkins = emissoes.filter(e => e.status === 'confirmada').slice(0, 3)
   const metricValues = [formatCurrency(totalEconomia), String(clientesAtivos), String(clientesMeta), formatCurrency(faturamento), String(pendentes.length), String(checkins.length)]

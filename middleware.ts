@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server'
 export default auth((req) => {
   const isLoggedIn = !!req.auth
   const isAuthRoute = req.nextUrl.pathname.startsWith('/login') ||
-    req.nextUrl.pathname.startsWith('/cadastro')
+    req.nextUrl.pathname.startsWith('/cadastro') ||
+    req.nextUrl.pathname.startsWith('/questionario')
 
   if (!isLoggedIn && !isAuthRoute) {
     return NextResponse.redirect(new URL('/login', req.nextUrl))
@@ -16,5 +17,5 @@ export default auth((req) => {
 })
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
+  matcher: ['/((?!api|questionario|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

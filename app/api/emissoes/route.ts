@@ -35,16 +35,16 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  const feeVal = parseFloat(feeCobrado)
-  if (feeVal > 0) {
+  const valorAtlas = parseFloat(feeCobrado)
+  if (valorAtlas > 0) {
     await prisma.transacao.create({
       data: {
         gestorId: session.user.id,
         clienteId,
         emissaoId: emissao.id,
-        tipo: 'fee_emissao',
-        descricao: `Fee de emissão: ${origem.toUpperCase()} → ${destino.toUpperCase()}`,
-        valor: feeVal,
+        tipo: 'receita_emissao',
+        descricao: `Receita Atlas da emissao: ${origem.toUpperCase()} -> ${destino.toUpperCase()}`,
+        valor: valorAtlas,
       },
     })
   }

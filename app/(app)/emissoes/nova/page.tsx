@@ -181,7 +181,7 @@ function NovaEmissaoForm() {
                   <Input type="number" step="0.01" placeholder="350,00" value={form.taxasPagas} onChange={e => update('taxasPagas', e.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Fee cobrado ao cliente (R$)</Label>
+                  <Label>Preco Atlas / valor cobrado (R$)</Label>
                   <Input type="number" step="0.01" placeholder="200,00" value={form.feeCobrado} onChange={e => update('feeCobrado', e.target.value)} />
                 </div>
               </div>

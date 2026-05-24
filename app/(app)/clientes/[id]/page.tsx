@@ -2,7 +2,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { getProgramas, toNum, calcEconomia } from '@/lib/queries'
 import { formatCurrency, formatMilhas } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
@@ -40,9 +40,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const confirmadas = emissoes.filter(e => e.status === 'confirmada')
   const economiaTotal = confirmadas.reduce((acc, e) => acc + calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado), 0)
   const totalMilhas = confirmadas.reduce((acc, e) => acc + e.milhasUtilizadas, 0)
-  const totalFees = emissoes.reduce((acc, e) => acc + toNum(e.feeCobrado), 0)
-  const roi = totalFees > 0 ? ((economiaTotal - totalFees) / totalFees) * 100 : 0
   const metaEconomia = toNum(cliente.metaEconomia)
+  const roi = metaEconomia > 0 ? ((economiaTotal - metaEconomia) / metaEconomia) * 100 : 0
   const progresso = metaEconomia > 0 ? Math.min((economiaTotal / metaEconomia) * 100, 100) : 0
 
   return (
@@ -64,10 +63,22 @@ export default async function ClienteDetalhePage({ params }: Props) {
             <h3 className="font-medium text-slate-700">Contato</h3>
             {cliente.email && <div className="flex items-center gap-2 text-sm text-slate-600"><Mail size={14} /> {cliente.email}</div>}
             {cliente.telefone && <div className="flex items-center gap-2 text-sm text-slate-600"><Phone size={14} /> {cliente.telefone}</div>}
-            {toNum(cliente.feeMensal) > 0 && (
+            {cliente.produtoContratado && (
               <p className="text-sm">
-                <span className="text-slate-500">Fee mensal:</span>{' '}
-                <span className="font-medium">{formatCurrency(toNum(cliente.feeMensal))}</span>
+                <span className="text-slate-500">Produto:</span>{' '}
+                <span className="font-medium">{cliente.produtoContratado}</span>
+              </p>
+            )}
+            {metaEconomia > 0 && (
+              <p className="text-sm">
+                <span className="text-slate-500">Valor investido:</span>{' '}
+                <span className="font-medium">{formatCurrency(metaEconomia)}</span>
+              </p>
+            )}
+            {cliente.acessoFim && (
+              <p className="text-sm">
+                <span className="text-slate-500">Acesso ate:</span>{' '}
+                <span className="font-medium">{new Date(cliente.acessoFim).toLocaleDateString('pt-BR')}</span>
               </p>
             )}
           </CardContent>

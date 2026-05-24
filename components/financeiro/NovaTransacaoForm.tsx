@@ -60,9 +60,8 @@ export function NovaTransacaoForm({ clientes }: Props) {
               <Select value={form.tipo} onValueChange={v => update('tipo', v ?? 'receita')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fee_mensal">Fee Mensal</SelectItem>
-                  <SelectItem value="fee_emissao">Fee de Emissão</SelectItem>
-                  <SelectItem value="receita">Receita Avulsa</SelectItem>
+                  <SelectItem value="receita">Produto contratado / receita</SelectItem>
+                  <SelectItem value="receita_emissao">Receita de emissao</SelectItem>
                   <SelectItem value="compra_milhas">Compra de Milhas</SelectItem>
                   <SelectItem value="despesa">Despesa</SelectItem>
                 </SelectContent>

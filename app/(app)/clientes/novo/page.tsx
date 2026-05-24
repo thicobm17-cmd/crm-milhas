@@ -1,24 +1,30 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
+import { atlasProducts } from '@/lib/atlas-products'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
 
 export default function NovoClientePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
   const [form, setForm] = useState({
-    nome: '', email: '', telefone: '', cpf: '',
-    dataNascimento: '', feeMensal: '', feePorEmissao: '',
-    metaEconomia: '', observacoes: '',
+    nome: '',
+    email: '',
+    telefone: '',
+    cpf: '',
+    dataNascimento: '',
+    produtoContratado: '',
+    valorProduto: '',
+    observacoes: '',
   })
 
   function update(field: string, value: string) {
@@ -30,32 +36,42 @@ export default function NovoClientePage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/clientes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    })
+    try {
+      const res = await fetch('/api/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
 
-    const data = await res.json()
-    if (!res.ok) { setError(data.error ?? 'Erro ao salvar.'); setLoading(false); return }
-    router.push(`/clientes/${data.id}`)
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.error ?? 'Erro ao salvar cliente.')
+
+      router.push(`/clientes/${data.id}`)
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao salvar cliente.')
+      setLoading(false)
+    }
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-3xl space-y-6">
       <div className="flex items-center gap-3">
         <Link href="/clientes">
-          <Button variant="ghost" size="sm"><ArrowLeft size={16} className="mr-1" /> Voltar</Button>
+          <Button variant="ghost" size="sm"><ArrowLeft size={16} /> Voltar</Button>
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900">Novo Cliente</h1>
+        <div>
+          <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Cliente Atlas</p>
+          <h1 className="text-3xl font-semibold text-[#11231f]">Novo cliente</h1>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader><CardTitle className="text-base">Dados pessoais</CardTitle></CardHeader>
+      <Card className="atlas-panel">
+        <CardHeader><CardTitle>Dados do cliente e produto</CardTitle></CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2 space-y-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2 md:col-span-2">
                 <Label>Nome completo *</Label>
                 <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />
               </div>
@@ -65,7 +81,7 @@ export default function NovoClientePage() {
               </div>
               <div className="space-y-2">
                 <Label>Telefone / WhatsApp</Label>
-                <Input type="tel" placeholder="(11) 99999-9999" value={form.telefone} onChange={e => update('telefone', e.target.value)} />
+                <Input type="tel" placeholder="(21) 99999-9999" value={form.telefone} onChange={e => update('telefone', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>CPF</Label>
@@ -77,33 +93,39 @@ export default function NovoClientePage() {
               </div>
             </div>
 
-            <div className="border-t pt-5">
-              <h3 className="font-medium text-slate-700 mb-4">Valores da assessoria</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border-t border-[#d7ad68]/25 pt-5">
+              <h3 className="mb-4 font-medium text-[#0b3b31]">Produto escolhido</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Fee mensal (R$)</Label>
-                  <Input type="number" step="0.01" placeholder="0,00" value={form.feeMensal} onChange={e => update('feeMensal', e.target.value)} />
+                  <Label>Produto contratado</Label>
+                  <Select value={form.produtoContratado} onValueChange={v => update('produtoContratado', v ?? '')}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
+                    <SelectContent>
+                      {atlasProducts.map(product => (
+                        <SelectItem key={product} value={product}>{product}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Fee por emissão (R$)</Label>
-                  <Input type="number" step="0.01" placeholder="0,00" value={form.feePorEmissao} onChange={e => update('feePorEmissao', e.target.value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Meta de economia (R$)</Label>
-                  <Input type="number" step="0.01" placeholder="0,00" value={form.metaEconomia} onChange={e => update('metaEconomia', e.target.value)} />
+                  <Label>Valor pago/investido no produto (R$)</Label>
+                  <Input type="number" step="0.01" placeholder="0,00" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
+                  <p className="text-xs text-muted-foreground">Este valor vira a meta de economia do cliente.</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label>Observações</Label>
-              <Textarea placeholder="Preferências de voo, programas prioritários..." value={form.observacoes} onChange={e => update('observacoes', e.target.value)} rows={3} />
+              <Label>Observacoes</Label>
+              <Textarea placeholder="Preferencias de voo, programas prioritarios, observacoes da call..." value={form.observacoes} onChange={e => update('observacoes', e.target.value)} rows={3} />
             </div>
 
-            {error && <p className="text-sm text-red-500 bg-red-50 p-2 rounded">{error}</p>}
+            {error && <p className="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">{error}</p>}
 
             <div className="flex gap-3 pt-2">
-              <Button type="submit" disabled={loading}>{loading ? 'Salvando...' : 'Salvar cliente'}</Button>
+              <Button type="submit" disabled={loading} className="bg-[#0b3b31] text-[#f4d59a] hover:bg-[#12483d]">
+                {loading ? 'Salvando...' : 'Salvar cliente'}
+              </Button>
               <Link href="/clientes"><Button type="button" variant="outline">Cancelar</Button></Link>
             </div>
           </form>

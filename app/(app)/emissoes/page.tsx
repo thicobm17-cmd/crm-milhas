@@ -1,6 +1,6 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { calcEconomia, toNum } from '@/lib/queries'
+import { calcEconomia } from '@/lib/queries'
 import { formatCurrency, formatMilhas } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
