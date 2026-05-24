@@ -152,6 +152,8 @@ prisma db seed                    → sincroniza os programas de fidelidade
 npm start                         → inicia o Next.js em produção
 ```
 
+**Healthcheck Railway:** usa `/api/health`, que retorna 200 sem depender de autenticação, banco ou redirects.
+
 **Checklist:**
 - [x] Código no GitHub
 - [x] Projeto criado no Railway
@@ -178,3 +180,5 @@ npm start                         → inicia o Next.js em produção
 6. **Seed é obrigatório** — sem rodar o seed, a tabela `programas` fica vazia e o sistema não funciona corretamente.
 
 7. **Railway sem migrations:** este projeto ainda não tem arquivos em `prisma/migrations`. Enquanto isso for verdade, não use `prisma migrate deploy` no start command; use `prisma db push --accept-data-loss`.
+
+8. **Healthcheck não deve usar `/`:** a raiz redireciona para `/login` ou `/dashboard`; no Railway, use `/api/health`.
