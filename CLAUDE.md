@@ -181,4 +181,4 @@ node scripts/railway-start.mjs → tenta sincronizar Prisma/seed e sempre inicia
 
 8. **Healthcheck não deve usar `/`:** a raiz redireciona para `/login` ou `/dashboard`; no Railway, use `/api/health`.
 
-9. **Start resiliente:** o Railway usa `scripts/railway-start.mjs`. Ele tenta `prisma db push` e `prisma db seed`, mas não deixa falha de banco impedir o `npm start`. Se o site abrir mas login/cadastro falharem, confira `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+9. **Start resiliente:** o Railway usa `scripts/railway-start.mjs`. Ele inicia o Next em `0.0.0.0:3000` para bater com o Target port do Public Networking, e roda `prisma db push`/`prisma db seed` em segundo plano. Se o site abrir mas login/cadastro falharem, confira `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
