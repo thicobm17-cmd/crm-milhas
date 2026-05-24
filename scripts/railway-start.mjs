@@ -4,7 +4,7 @@ const isWindows = process.platform === 'win32'
 const npxCommand = isWindows ? 'npx.cmd' : 'npx'
 const npmCommand = isWindows ? 'npm.cmd' : 'npm'
 
-function runOptionalStep(label, command, args, timeoutMs = 120_000) {
+function runOptionalStep(label, command, args, timeoutMs = 30_000) {
   console.log(`[startup] ${label}...`)
 
   const result = spawnSync(command, args, {
