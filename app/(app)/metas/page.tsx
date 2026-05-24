@@ -1,11 +1,11 @@
+import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { getClientesComResumo } from '@/lib/queries'
 import { formatCurrency } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
-import { Target, TrendingUp, CheckCircle } from 'lucide-react'
-import Link from 'next/link'
+import { CalendarDays, Target, Trophy } from 'lucide-react'
 
 export default async function MetasPage() {
   const session = await auth()
@@ -20,71 +20,72 @@ export default async function MetasPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Metas de Economia</h1>
-        <p className="text-slate-500 mt-1">Acompanhe o progresso de cada cliente</p>
+        <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 8</p>
+        <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Metas</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Meta mensal da empresa e meta individual do cliente: economizar no minimo o valor investido.</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="border-0 shadow-sm">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="atlas-panel">
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-2"><Target size={16} className="text-blue-500" /><p className="text-xs text-slate-500">Meta Total da Carteira</p></div>
-            <p className="text-xl font-bold">{formatCurrency(totalMeta)}</p>
+            <Target size={18} className="mb-3 text-[#8f7040]" />
+            <p className="text-sm text-muted-foreground">Meta total da carteira</p>
+            <p className="mt-2 text-2xl font-semibold text-[#0b3b31]">{formatCurrency(totalMeta)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="atlas-panel">
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-2"><TrendingUp size={16} className="text-green-500" /><p className="text-xs text-slate-500">Economia Realizada</p></div>
-            <p className="text-xl font-bold text-green-600">{formatCurrency(totalEconomia)}</p>
-            <p className="text-xs text-slate-400 mt-1">{progressoGeral.toFixed(1)}% da meta geral</p>
+            <Trophy size={18} className="mb-3 text-[#8f7040]" />
+            <p className="text-sm text-muted-foreground">Economia realizada</p>
+            <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatCurrency(totalEconomia)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
+        <Card className="atlas-panel">
           <CardContent className="p-5">
-            <div className="flex items-center gap-2 mb-2"><CheckCircle size={16} className="text-purple-500" /><p className="text-xs text-slate-500">Metas Atingidas</p></div>
-            <p className="text-xl font-bold">{clientesAcima100}</p>
-            <p className="text-xs text-slate-400">de {clientes.length} clientes com meta</p>
+            <CalendarDays size={18} className="mb-3 text-[#8f7040]" />
+            <p className="text-sm text-muted-foreground">Clientes acima da meta</p>
+            <p className="mt-2 text-2xl font-semibold text-[#0b3b31]">{clientesAcima100} / {clientes.length}</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-5">
-          <p className="font-medium mb-3">Progresso Geral da Carteira</p>
-          <Progress value={progressoGeral} className="h-4" />
-          <div className="flex justify-between text-sm mt-2">
-            <span className="text-slate-500">{formatCurrency(totalEconomia)}</span>
-            <span className="font-medium">{formatCurrency(totalMeta)}</span>
+      <Card className="atlas-dark-panel">
+        <CardHeader>
+          <CardTitle className="text-[#f4d59a]">Meta do mes para o financeiro</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-[#e8d3ab]/75">A meta mensal alimenta automaticamente a linha preta do grafico do Financeiro.</p>
+            <Badge className="bg-[#d7ad68] text-[#081613]">Meta atual demonstrativa: {formatCurrency(50000)}</Badge>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="border-0 shadow-sm">
-        <CardHeader><CardTitle className="text-base">Progresso por Cliente</CardTitle></CardHeader>
+      <Card className="atlas-panel">
+        <CardHeader>
+          <CardTitle>Progresso por cliente</CardTitle>
+        </CardHeader>
         <CardContent className="space-y-5">
           {clientes.length > 0 ? clientes.map(c => {
             const progresso = Math.min((c.economiaTotal / c.metaEconomia) * 100, 100)
-            const restante = Math.max(c.metaEconomia - c.economiaTotal, 0)
             const atingiu = c.economiaTotal >= c.metaEconomia
 
             return (
-              <div key={c.id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Link href={`/clientes/${c.id}`} className="font-medium hover:underline text-blue-700">{c.nome}</Link>
-                    {atingiu && <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">Meta atingida!</Badge>}
-                  </div>
-                  <span className="text-sm font-semibold">{progresso.toFixed(0)}%</span>
+              <div key={c.id} className="space-y-2 rounded-md border border-[#d7ad68]/25 bg-white/65 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <Link href={`/clientes/${c.id}`} className="font-medium text-[#0b3b31] hover:underline">{c.nome}</Link>
+                  {atingiu && <Badge className="bg-emerald-100 text-emerald-800">Meta atingida</Badge>}
                 </div>
                 <Progress value={progresso} className="h-2.5" />
-                <div className="flex justify-between text-xs text-slate-500">
-                  <span>Economizou: <strong className="text-green-600">{formatCurrency(c.economiaTotal)}</strong></span>
-                  <span>{atingiu ? `Excedeu em ${formatCurrency(c.economiaTotal - c.metaEconomia)}` : `Faltam ${formatCurrency(restante)}`}</span>
-                  <span>Meta: {formatCurrency(c.metaEconomia)}</span>
+                <div className="flex flex-wrap justify-between gap-2 text-xs text-muted-foreground">
+                  <span>Economizou {formatCurrency(c.economiaTotal)}</span>
+                  <span>Meta {formatCurrency(c.metaEconomia)}</span>
+                  <span>{progresso.toFixed(0)}%</span>
                 </div>
               </div>
             )
           }) : (
-            <p className="text-slate-400 text-center py-8">Nenhum cliente com meta definida. Edite os clientes para adicionar metas.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">Nenhum cliente com meta definida ainda.</p>
           )}
         </CardContent>
       </Card>

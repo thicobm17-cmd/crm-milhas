@@ -8,8 +8,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "MilhasCRM — Gestão de Milhas Profissional",
-  description: "CRM para gestores de milhas: clientes, emissões, economia e financeiro.",
+  title: "Atlas Beyond Destinations CRM",
+  description: "CRM Atlas para funil, vendas, clientes, viagens, milhas, financeiro e renovacoes.",
 };
 
 export default function RootLayout({

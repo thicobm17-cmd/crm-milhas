@@ -4,10 +4,14 @@ const prisma = new PrismaClient()
 
 async function main() {
   const programas = [
-    { nome: 'LATAM Pass', companhia: 'LATAM Airlines', cor: '#e3373c' },
-    { nome: 'Smiles', companhia: 'GOL Linhas Aéreas', cor: '#f97316' },
-    { nome: 'TudoAzul', companhia: 'Azul Linhas Aéreas', cor: '#2563eb' },
+    { nome: 'Esfera', companhia: 'Santander', cor: '#d7ad68' },
     { nome: 'Livelo', companhia: 'Livelo', cor: '#8b5cf6' },
+    { nome: 'TudoAzul', companhia: 'Azul Linhas Aereas', cor: '#2563eb' },
+    { nome: 'Smiles', companhia: 'GOL Linhas Aereas', cor: '#f97316' },
+    { nome: 'LATAM Pass', companhia: 'LATAM Airlines', cor: '#e3373c' },
+    { nome: 'Iberia Plus', companhia: 'Iberia', cor: '#a31621' },
+    { nome: 'TAP Miles&Go', companhia: 'TAP Air Portugal', cor: '#047857' },
+    { nome: 'AAdvantage', companhia: 'American Airlines', cor: '#1d4ed8' },
     { nome: 'Outro', companhia: 'Outros', cor: '#6b7280' },
   ]
 

@@ -1,5 +1,7 @@
 @AGENTS.md
 
+> Atualizacao importante: o produto agora deve ser tratado como **Atlas Beyond Destinations CRM**. A versao visual e funcional segue o PDF `CRM_ATLAS_ESPECIFICACAO_COMPLETA.pdf`: Dashboard, Funil de Vendas, Call de Vendas, Clientes, Calendario, Financeiro, Metas, Renovacoes e Configuracoes. O nome antigo MilhasCRM permanece apenas como historico de repositorio.
+
 # MilhasCRM — Contexto do Projeto
 
 ## Localização

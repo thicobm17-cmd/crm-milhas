@@ -1,5 +1,7 @@
 'use client'
 
+import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
@@ -7,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
 
 export default function CadastroPage() {
   const [nome, setNome] = useState('')
@@ -49,18 +50,20 @@ export default function CadastroPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-950 to-indigo-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="text-5xl mb-3">✈️</div>
-          <h1 className="text-3xl font-bold text-white">MilhasCRM</h1>
-          <p className="text-blue-200 mt-1">Crie sua conta de gestor</p>
+    <div className="flex min-h-screen items-center justify-center bg-[#061411] p-4">
+      <div className="w-full max-w-lg">
+        <div className="mb-8 text-center">
+          <div className="relative mx-auto mb-4 size-24 overflow-hidden rounded-full border border-[#d7ad68]/70 bg-black">
+            <Image src="/atlas-beyond-destinations.png" alt="Atlas Beyond Destinations" fill sizes="96px" className="object-cover" priority />
+          </div>
+          <h1 className="atlas-wordmark text-3xl font-semibold text-[#f4d59a]">ATLAS</h1>
+          <p className="mt-2 text-xs uppercase tracking-[0.26em] text-[#d7ad68]">Beyond Destinations</p>
         </div>
 
-        <Card className="border-0 shadow-2xl">
+        <Card className="border-[#d7ad68]/25 bg-[#fffcf5] shadow-2xl">
           <CardHeader>
             <CardTitle>Criar conta</CardTitle>
-            <CardDescription>Comece a gerenciar milhas profissionalmente</CardDescription>
+            <CardDescription>Acesso Atlas para colaboradores e gestores autorizados.</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleCadastro} className="space-y-4">
@@ -73,21 +76,21 @@ export default function CadastroPage() {
                 <Input id="email" type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="telefone">Telefone (opcional)</Label>
-                <Input id="telefone" type="tel" placeholder="(11) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} />
+                <Label htmlFor="telefone">Telefone</Label>
+                <Input id="telefone" type="tel" placeholder="(21) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" placeholder="Mínimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
+                <Input id="password" type="password" placeholder="Minimo 6 caracteres" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
               </div>
-              {error && <p className="text-sm text-red-500 bg-red-50 p-2 rounded">{error}</p>}
-              <Button type="submit" className="w-full" disabled={loading}>
+              {error && <p className="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">{error}</p>}
+              <Button type="submit" className="h-10 w-full bg-[#0b3b31] text-[#f4d59a] hover:bg-[#12483d]" disabled={loading}>
                 {loading ? 'Criando conta...' : 'Criar conta'}
               </Button>
             </form>
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              Já tem conta?{' '}
-              <Link href="/login" className="text-blue-600 hover:underline font-medium">Entrar</Link>
+            <p className="mt-5 text-center text-sm text-muted-foreground">
+              Ja tem conta?{' '}
+              <Link href="/login" className="font-medium text-[#0b3b31] hover:underline">Entrar</Link>
             </p>
           </CardContent>
         </Card>
