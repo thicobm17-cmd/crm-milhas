@@ -171,6 +171,8 @@ node scripts/railway-start.mjs → tenta sincronizar Prisma/seed e sempre inicia
 
 3. **`auth()` é do NextAuth v5** (não v4). A sessão tem `session.user.id` (configurado via callback JWT).
 
+   O `lib/auth.ts` define `trustHost: true` porque o Railway publica o app em domínio `*.up.railway.app`; sem isso, o Auth.js gera `UntrustedHost` e as páginas protegidas podem retornar 500.
+
 4. **Prisma 5** (não 7). O Prisma 7 tem breaking changes e não funciona com este schema.
 
 5. **Build:** `prisma generate && next build`. TypeScript errors são ignorados no build (`ignoreBuildErrors: true`) — o código funciona, apenas tem alguns `implicit any` em lambdas.
