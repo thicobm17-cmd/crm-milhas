@@ -1,8 +1,11 @@
 import { spawn, spawnSync } from 'node:child_process'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const isWindows = process.platform === 'win32'
 const npxCommand = isWindows ? 'npx.cmd' : 'npx'
-const npmCommand = isWindows ? 'npm.cmd' : 'npm'
+const scriptDir = dirname(fileURLToPath(import.meta.url))
+const nextBin = resolve(scriptDir, '../node_modules/next/dist/bin/next')
 
 function runOptionalStep(label, command, args, timeoutMs = 30_000) {
   console.log(`[startup] ${label}...`)
@@ -43,10 +46,9 @@ if (process.env.SKIP_DB_SYNC === '1') {
 
 console.log('[startup] Starting Next.js...')
 
-const app = spawn(npmCommand, ['start'], {
+const app = spawn(process.execPath, [nextBin, 'start'], {
   stdio: 'inherit',
   env: process.env,
-  shell: isWindows,
 })
 
 function forward(signal) {
