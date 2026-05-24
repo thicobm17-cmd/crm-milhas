@@ -184,3 +184,5 @@ node scripts/railway-start.mjs → tenta sincronizar Prisma/seed e sempre inicia
 8. **Healthcheck não deve usar `/`:** a raiz redireciona para `/login` ou `/dashboard`; no Railway, use `/api/health`.
 
 9. **Start resiliente:** o Railway usa `scripts/railway-start.mjs`. Ele inicia o Next na porta interna `PORT` do Railway (ex.: `8080`) para passar no healthcheck e, quando necessario, abre um proxy em `0.0.0.0:3000` para bater com o Target port do Public Networking. O `prisma db push`/`prisma db seed` roda em segundo plano. Se o site abrir mas login/cadastro falharem, confira `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
+
+10. **Middleware nao deve proteger `/api/*`:** as rotas API precisam retornar JSON (401/400/500), nao redirect HTML para `/login`. Se `/api/cadastro` for interceptado pelo middleware, a tela de cadastro fica presa em "Criando conta...".

@@ -10,6 +10,21 @@ const nextBin = resolve(scriptDir, '../node_modules/next/dist/bin/next')
 const appPort = process.env.PORT || '3000'
 const publicAliasPort = '3000'
 
+function normalizePublicUrl(value) {
+  if (!value) return undefined
+  return /^https?:\/\//.test(value) ? value : `https://${value}`
+}
+
+const publicAppUrl = process.env.AUTH_URL ||
+  process.env.NEXTAUTH_URL ||
+  normalizePublicUrl(process.env.RAILWAY_PUBLIC_DOMAIN)
+
+if (publicAppUrl) {
+  process.env.AUTH_URL = publicAppUrl
+  process.env.NEXTAUTH_URL = publicAppUrl
+  console.log(`[startup] Auth public URL: ${publicAppUrl}`)
+}
+
 function runOptionalStep(label, command, args, timeoutMs = 30_000) {
   return new Promise((resolve) => {
     console.log(`[startup] ${label}...`)
@@ -67,13 +82,25 @@ function startPublicPortProxy(fromPort, toPort) {
   if (fromPort === toPort) return undefined
 
   const server = createServer((clientReq, clientRes) => {
+    const forwardedHost = Array.isArray(clientReq.headers['x-forwarded-host'])
+      ? clientReq.headers['x-forwarded-host'][0]
+      : clientReq.headers['x-forwarded-host'] || clientReq.headers.host
+    const forwardedProto = Array.isArray(clientReq.headers['x-forwarded-proto'])
+      ? clientReq.headers['x-forwarded-proto'][0]
+      : clientReq.headers['x-forwarded-proto'] || 'https'
+    const headers = {
+      ...clientReq.headers,
+      ...(forwardedHost ? { host: forwardedHost, 'x-forwarded-host': forwardedHost } : {}),
+      'x-forwarded-proto': forwardedProto,
+    }
+
     const proxyReq = request(
       {
         hostname: '127.0.0.1',
         port: Number(toPort),
         method: clientReq.method,
         path: clientReq.url,
-        headers: clientReq.headers,
+        headers,
       },
       (proxyRes) => {
         clientRes.writeHead(proxyRes.statusCode ?? 502, proxyRes.statusMessage, proxyRes.headers)

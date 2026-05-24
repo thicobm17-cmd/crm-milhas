@@ -23,22 +23,29 @@ export default function CadastroPage() {
     setLoading(true)
     setError('')
 
-    const res = await fetch('/api/cadastro', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, email, password, telefone }),
-    })
+    try {
+      const res = await fetch('/api/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, password, telefone }),
+      })
 
-    const data = await res.json()
-    if (!res.ok) {
-      setError(data.error ?? 'Erro ao criar conta.')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Erro ao criar conta.')
+      }
+
+      const result = await signIn('credentials', { email, password, redirect: false })
+      if (result?.error) {
+        throw new Error('Conta criada, mas nao foi possivel entrar automaticamente. Tente entrar pelo login.')
+      }
+
+      router.push('/dashboard')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao criar conta.')
       setLoading(false)
-      return
     }
-
-    await signIn('credentials', { email, password, redirect: false })
-    router.push('/dashboard')
-    router.refresh()
   }
 
   return (
