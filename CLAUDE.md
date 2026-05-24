@@ -147,9 +147,7 @@ NODE_VERSION     → 20
 
 **Comandos de deploy (`railway.toml`):**
 ```
-prisma db push --accept-data-loss → sincroniza o schema sem exigir migrations
-prisma db seed                    → sincroniza os programas de fidelidade
-npm start                         → inicia o Next.js em produção
+node scripts/railway-start.mjs → tenta sincronizar Prisma/seed e sempre inicia o Next.js
 ```
 
 **Healthcheck Railway:** usa `/api/health`, que retorna 200 sem depender de autenticação, banco ou redirects.
@@ -182,3 +180,5 @@ npm start                         → inicia o Next.js em produção
 7. **Railway sem migrations:** este projeto ainda não tem arquivos em `prisma/migrations`. Enquanto isso for verdade, não use `prisma migrate deploy` no start command; use `prisma db push --accept-data-loss`.
 
 8. **Healthcheck não deve usar `/`:** a raiz redireciona para `/login` ou `/dashboard`; no Railway, use `/api/health`.
+
+9. **Start resiliente:** o Railway usa `scripts/railway-start.mjs`. Ele tenta `prisma db push` e `prisma db seed`, mas não deixa falha de banco impedir o `npm start`. Se o site abrir mas login/cadastro falharem, confira `DATABASE_URL=${{Postgres.DATABASE_URL}}`.
