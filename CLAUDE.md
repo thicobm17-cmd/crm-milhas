@@ -136,7 +136,7 @@ AUTH_SECRET="string-base64-gerada-com-openssl"
 
 ### Railway (Variables do serviço)
 ```
-DATABASE_URL     → gerado automaticamente ao linkar o PostgreSQL
+DATABASE_URL     → deve ser referência: ${{Postgres.DATABASE_URL}}
 AUTH_SECRET      → gerado com: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 NODE_VERSION     → 20
 ```
@@ -147,9 +147,9 @@ NODE_VERSION     → 20
 
 **Comandos de deploy (`railway.toml`):**
 ```
-prisma migrate deploy   → aplica migrations no banco
-prisma db seed          → insere os programas de fidelidade
-npm start               → inicia o Next.js em produção
+prisma db push --accept-data-loss → sincroniza o schema sem exigir migrations
+prisma db seed                    → sincroniza os programas de fidelidade
+npm start                         → inicia o Next.js em produção
 ```
 
 **Checklist:**
@@ -176,3 +176,5 @@ npm start               → inicia o Next.js em produção
 5. **Build:** `prisma generate && next build`. TypeScript errors são ignorados no build (`ignoreBuildErrors: true`) — o código funciona, apenas tem alguns `implicit any` em lambdas.
 
 6. **Seed é obrigatório** — sem rodar o seed, a tabela `programas` fica vazia e o sistema não funciona corretamente.
+
+7. **Railway sem migrations:** este projeto ainda não tem arquivos em `prisma/migrations`. Enquanto isso for verdade, não use `prisma migrate deploy` no start command; use `prisma db push --accept-data-loss`.
