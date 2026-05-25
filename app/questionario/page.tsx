@@ -55,9 +55,7 @@ export default function QuestionarioPage() {
     const respostas = flatQuestions.map((item) => ({
       bloco: item.block,
       pergunta: item.question,
-      resposta: item.question === 'Movimentacao mensal'
-        ? form.gastoMensal || answers[item.question] || ''
-        : answers[item.question] || '',
+      resposta: answers[item.question] || '',
     }))
 
     const response = await fetch('/api/leads', {
@@ -107,15 +105,15 @@ export default function QuestionarioPage() {
         <form onSubmit={handleSubmit} className="atlas-panel space-y-6 rounded-lg p-5 shadow-2xl md:p-7">
           <div className="grid gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <Label>Nome completo *</Label>
+              <Label>Nome completo</Label>
               <Input required value={form.nome} onChange={(event) => update('nome', event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>WhatsApp com DDD *</Label>
+              <Label>WhatsApp com DDD</Label>
               <Input required value={form.whatsapp} onChange={(event) => update('whatsapp', event.target.value)} />
             </div>
             <div className="space-y-2">
-              <Label>E-mail *</Label>
+              <Label>E-mail</Label>
               <Input required type="email" value={form.email} onChange={(event) => update('email', event.target.value)} />
             </div>
             <div className="space-y-2">
@@ -145,7 +143,7 @@ export default function QuestionarioPage() {
                   <div key={question} className="space-y-2">
                     <Label>{question}</Label>
                     <Textarea
-                      value={question === 'Movimentacao mensal' ? form.gastoMensal || answers[question] || '' : answers[question] || ''}
+                      value={answers[question] || ''}
                       onChange={(event) => updateAnswer(question, event.target.value)}
                       placeholder="Conte um pouco..."
                     />

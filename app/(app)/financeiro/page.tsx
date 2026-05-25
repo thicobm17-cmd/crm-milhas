@@ -94,7 +94,7 @@ export default async function FinanceiroPage({ searchParams }: Props) {
         <div>
           <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 5</p>
           <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Financeiro da empresa</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Receitas, despesas (incl. fixas mensais), a receber, imposto e meta — {labelPeriodo}.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Receitas, despesas (incl. fixas mensais), a receber, imposto e meta - {labelPeriodo}.</p>
         </div>
         <div className="flex flex-col items-end gap-3">
           <PeriodoFilter mes={periodo.mes} ano={periodo.ano} />
@@ -169,7 +169,7 @@ export default async function FinanceiroPage({ searchParams }: Props) {
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t.cliente?.nome || 'Empresa'} - {tipoLabels[t.tipo] || t.tipo}
-                      {' · '}
+                      {' - '}
                       {t.recorrente
                         ? `desde ${t.createdAt.toLocaleDateString('pt-BR')}`
                         : (t.pago && t.dataPagamento

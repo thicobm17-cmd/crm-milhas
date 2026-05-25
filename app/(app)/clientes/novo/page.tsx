@@ -13,6 +13,10 @@ import { Textarea } from '@/components/ui/textarea'
 
 interface ProdutoCatalogo { id: string; nome: string; preco: number }
 
+function formatMoney(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
 export default function NovoClientePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -26,6 +30,7 @@ export default function NovoClientePage() {
     dataNascimento: '',
     produtoContratado: '',
     valorProduto: '',
+    valorModo: 'outro',
     mesesAcesso: '12',
     observacoes: '',
   })
@@ -44,7 +49,17 @@ export default function NovoClientePage() {
     setForm(prev => ({
       ...prev,
       produtoContratado: nome,
-      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : prev.valorProduto,
+      valorModo: produto && produto.preco > 0 ? 'catalogo' : 'outro',
+      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : '',
+    }))
+  }
+
+  function selecionarValor(modo: string) {
+    const produto = produtos.find(p => p.nome === form.produtoContratado)
+    setForm(prev => ({
+      ...prev,
+      valorModo: modo,
+      valorProduto: modo === 'catalogo' && produto && produto.preco > 0 ? String(produto.preco) : '',
     }))
   }
 
@@ -89,7 +104,7 @@ export default function NovoClientePage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2 md:col-span-2">
-                <Label>Nome completo *</Label>
+                <Label>Nome completo</Label>
                 <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />
               </div>
               <div className="space-y-2">
@@ -120,7 +135,7 @@ export default function NovoClientePage() {
                     <SelectContent>
                       {produtos.map(product => (
                         <SelectItem key={product.id} value={product.nome}>
-                          {product.nome}{product.preco > 0 ? ` — ${product.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+                          {product.nome}{product.preco > 0 ? ` - ${formatMoney(product.preco)}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -128,8 +143,21 @@ export default function NovoClientePage() {
                   <p className="text-xs text-muted-foreground">Gerencie produtos e precos em Configuracoes.</p>
                 </div>
                 <div className="space-y-2">
-                  <Label>Valor pago/investido no produto (R$)</Label>
-                  <Input type="number" step="0.01" placeholder="0,00" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
+                  <Label>Valor pago/investido no produto</Label>
+                  <Select value={form.valorModo} onValueChange={v => selecionarValor(v ?? 'outro')}>
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {produtos.find(p => p.nome === form.produtoContratado)?.preco ? (
+                        <SelectItem value="catalogo">Valor cadastrado - {formatMoney(produtos.find(p => p.nome === form.produtoContratado)!.preco)}</SelectItem>
+                      ) : null}
+                      <SelectItem value="outro">Outro valor / desconto</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.valorModo === 'outro' ? (
+                    <Input type="number" step="0.01" placeholder="Digite o valor negociado" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
+                  ) : (
+                    <Input readOnly value={produtos.find(p => p.nome === form.produtoContratado)?.preco ? formatMoney(produtos.find(p => p.nome === form.produtoContratado)!.preco) : 'Sem valor cadastrado'} />
+                  )}
                   <p className="text-xs text-muted-foreground">Vira a meta de economia do cliente e entra como receita no Financeiro.</p>
                 </div>
                 <div className="space-y-2">

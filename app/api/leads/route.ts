@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { parseSaoPauloDateTime } from '@/lib/date-time'
 
 function getDeniedFollowUpDate() {
   const date = new Date()
@@ -87,7 +88,7 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (action === 'agendar_call') {
-    const dataHora = body.dataHora ? new Date(body.dataHora) : null
+    const dataHora = parseSaoPauloDateTime(body.dataHora)
     const lead = await prisma.lead.update({
       where: { id },
       data: {

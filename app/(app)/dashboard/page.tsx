@@ -118,7 +118,7 @@ export default async function DashboardPage({ searchParams }: Props) {
 
       <Card className="atlas-panel">
         <CardHeader>
-          <CardTitle>Faturamento x Despesa x Meta — {periodo.ano}</CardTitle>
+          <CardTitle>Faturamento x Despesa x Meta - {periodo.ano}</CardTitle>
           <p className="text-sm text-muted-foreground">Receita recebida (verde), despesas (vermelho) e meta de faturamento (linha preta tracejada) mes a mes.</p>
         </CardHeader>
         <CardContent>

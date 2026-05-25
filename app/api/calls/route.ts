@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { parseSaoPauloDateTime } from '@/lib/date-time'
 
 function addMonths(date: Date, months: number) {
   const next = new Date(date)
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
   const meses = Math.max(1, Math.min(parseInt(periodoMeses, 10) || 1, 12))
   const clienteFechou = fechou === true || fechou === 'true'
   const pagamentoFeito = pago === true || pago === 'true'
+  const dataHoraCall = parseSaoPauloDateTime(dataHora)
 
   if (!produto && clienteFechou) {
     return NextResponse.json({ error: 'Informe o produto contratado.' }, { status: 400 })
@@ -66,10 +68,10 @@ export async function POST(request: NextRequest) {
           origem: 'Indicacao',
           indicadoPor: manualLead.indicadoPor || null,
           gastoMensal: manualLead.gastoMensal || null,
-          statusCall: dataHora ? 'MARCADA' : 'AGUARDANDO_MARCACAO',
+          statusCall: dataHoraCall ? 'MARCADA' : 'AGUARDANDO_MARCACAO',
           primeiroContatoRealizado: true,
           primeiroContatoGestorId: session.user.id,
-          callMarcadaPara: dataHora ? new Date(dataHora) : null,
+          callMarcadaPara: dataHoraCall,
           respostas: { create: buildAnswers(respostas) },
         },
         include: { respostas: true },
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
         leadId: lead.id,
         criadoPorId: session.user.id,
         origemCliente: origemCliente || (leadId ? 'FUNIL' : 'INDICACAO'),
-        dataHora: dataHora ? new Date(dataHora) : lead.callMarcadaPara,
+        dataHora: dataHoraCall || lead.callMarcadaPara,
         produto: produto || null,
         valor: valorProduto || null,
         fechou: clienteFechou,
@@ -102,7 +104,8 @@ export async function POST(request: NextRequest) {
         data: {
           statusFinal: 'FOLLOW_UP',
           followUpInicio: new Date(),
-          statusCall: 'AGUARDANDO_MARCACAO',
+          statusCall: dataHoraCall ? 'MARCADA' : 'AGUARDANDO_MARCACAO',
+          callMarcadaPara: dataHoraCall || lead.callMarcadaPara,
         },
       })
       return { callId: call.id, clienteId: null }

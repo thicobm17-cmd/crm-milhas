@@ -4,10 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CalendarDays, Clock, Users } from 'lucide-react'
+import { formatSaoPauloDate, formatSaoPauloTime, formatSaoPauloWeekdayShort } from '@/lib/date-time'
 
 export const dynamic = 'force-dynamic'
-
-const diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab']
 
 export default async function CalendarioPage() {
   const [equipe, callsAgendadas] = await Promise.all([
@@ -56,7 +55,7 @@ export default async function CalendarioPage() {
                   </div>
                   {data && (
                     <Badge className="bg-emerald-100 text-emerald-800">
-                      {diaSemana[data.getDay()]} {data.toLocaleDateString('pt-BR')} · {data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      {formatSaoPauloWeekdayShort(data)} {formatSaoPauloDate(data)} - {formatSaoPauloTime(data)}
                     </Badge>
                   )}
                 </div>

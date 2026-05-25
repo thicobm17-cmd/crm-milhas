@@ -38,7 +38,7 @@ export function MetaForm({ mes, ano, valorAtual, label }: Props) {
 
   return (
     <form onSubmit={salvar} className="space-y-2">
-      <p className="text-sm text-[#e8d3ab]/75">Meta de faturamento — {label}</p>
+      <p className="text-sm text-[#e8d3ab]/75">Meta de faturamento - {label}</p>
       {desabilitado ? (
         <p className="text-xs text-[#e8d3ab]/60">Selecione um mes especifico para definir a meta.</p>
       ) : (

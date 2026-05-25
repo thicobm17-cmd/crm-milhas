@@ -1,5 +1,7 @@
 import { CallVendasForm } from '@/components/call/CallVendasForm'
 import { Card, CardContent } from '@/components/ui/card'
+import { auth } from '@/lib/auth'
+import { atlasProducts } from '@/lib/atlas-products'
 import { prisma } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +14,10 @@ const callSteps = [
 ]
 
 export default async function CallVendasPage() {
-  const [leadsRaw, gestores] = await Promise.all([
+  const session = await auth()
+  const gestorId = session!.user.id
+
+  const [leadsRaw, gestores, produtosRaw] = await Promise.all([
     prisma.lead.findMany({
       where: {
         statusFinal: { not: 'CLIENTE' },
@@ -30,6 +35,10 @@ export default async function CallVendasPage() {
       select: { id: true, nome: true },
       orderBy: { nome: 'asc' },
     }),
+    prisma.produtoCatalogo.findMany({
+      where: { gestorId, ativo: true },
+      orderBy: { createdAt: 'asc' },
+    }),
   ])
 
   const leads = leadsRaw.map((lead) => ({
@@ -46,6 +55,10 @@ export default async function CallVendasPage() {
       resposta: answer.resposta,
     })),
   }))
+
+  const produtos = produtosRaw.length > 0
+    ? produtosRaw.map((produto) => ({ id: produto.id, nome: produto.nome, preco: Number(produto.preco) }))
+    : atlasProducts.map((nome, index) => ({ id: `padrao-${index}`, nome, preco: 0 }))
 
   return (
     <div className="space-y-6">
@@ -68,7 +81,7 @@ export default async function CallVendasPage() {
         ))}
       </div>
 
-      <CallVendasForm leads={leads} gestores={gestores} />
+      <CallVendasForm leads={leads} gestores={gestores} produtos={produtos} />
     </div>
   )
 }

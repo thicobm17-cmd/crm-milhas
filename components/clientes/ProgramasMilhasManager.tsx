@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -114,6 +114,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
     cotacaoDolar: '5.00',
     custoTotal: '',
   })
+  const [cotacaoStatus, setCotacaoStatus] = useState('Carregando cotacao do dia...')
 
   const selectedCard = useMemo(() => cartoes.find(c => c.id === calc.cartaoId) || null, [cartoes, calc.cartaoId])
   const pontosCalculados = useMemo(() => {
@@ -122,6 +123,33 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
     if (!selectedCard || fatura <= 0 || dolar <= 0) return 0
     return Math.floor((fatura / dolar) * selectedCard.pontosPorDolar)
   }, [calc.valorFatura, calc.cotacaoDolar, selectedCard])
+
+  useEffect(() => {
+    let active = true
+    fetch('/api/cotacao-dolar', { cache: 'no-store' })
+      .then(async (response) => {
+        const data = await response.json().catch(() => null)
+        if (!active) return
+        if (!response.ok || !data?.cotacao) {
+          setCotacaoStatus('Nao foi possivel carregar a cotacao automaticamente. Ajuste manualmente.')
+          return
+        }
+        const cotacao = Number(data.cotacao)
+        if (!Number.isFinite(cotacao) || cotacao <= 0) {
+          setCotacaoStatus('Cotacao automatica invalida. Ajuste manualmente.')
+          return
+        }
+        setCalc(prev => ({ ...prev, cotacaoDolar: cotacao.toFixed(4) }))
+        setCotacaoStatus(`Cotacao do dia carregada automaticamente: ${cotacao.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`)
+      })
+      .catch(() => {
+        if (active) setCotacaoStatus('Nao foi possivel carregar a cotacao automaticamente. Ajuste manualmente.')
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   function updatePrograma(field: string, value: string) {
     setProgramaForm(prev => ({ ...prev, [field]: value }))
@@ -372,8 +400,9 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                   <Input type="number" step="0.01" value={calc.valorFatura} onChange={e => setCalc(prev => ({ ...prev, valorFatura: e.target.value }))} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Dolar do fechamento</Label>
+                  <Label>Cotacao do dolar</Label>
                   <Input type="number" step="0.0001" value={calc.cotacaoDolar} onChange={e => setCalc(prev => ({ ...prev, cotacaoDolar: e.target.value }))} />
+                  <p className="text-xs text-muted-foreground">{cotacaoStatus}</p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -383,7 +412,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
               <div className="rounded-md bg-[#0b3b31] p-4 text-[#f8e7c4]">
                 <p className="text-xs text-[#d7ad68]">Resultado exato pela fatura</p>
                 <p className="mt-1 text-2xl font-semibold">{brNumber(pontosCalculados)} pontos</p>
-                <p className="text-xs text-[#f8e7c4]/70">Formula: fatura / dolar x pontos por dolar do cartao.</p>
+                <p className="text-xs text-[#f8e7c4]/70">Formula: fatura / cotacao do dolar x pontos por dolar do cartao.</p>
               </div>
               <Button type="button" disabled={saving || pontosCalculados <= 0 || !calc.contaId} onClick={adicionarCalculado} className="w-full bg-[#0b3b31] text-[#f4d59a]">
                 <Plus size={15} /> Adicionar ao programa

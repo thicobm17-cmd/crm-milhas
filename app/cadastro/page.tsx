@@ -62,7 +62,7 @@ export default function CadastroPage() {
       <div className="flex min-h-screen items-center justify-center bg-[#061411] p-4">
         <Card className="w-full max-w-md border-[#d7ad68]/25 bg-[#fffcf5] shadow-2xl">
           <CardHeader>
-            <CardTitle>Conta criada — aguardando aprovacao</CardTitle>
+            <CardTitle>Conta criada - aguardando aprovacao</CardTitle>
             <CardDescription>
               Sua conta foi registrada e esta na fila de aprovacao do CEO. Voce podera entrar assim que o acesso for autorizado.
             </CardDescription>

@@ -11,9 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { questionnaireBlocks } from '@/lib/atlas-spec'
-import { atlasProducts } from '@/lib/atlas-products'
+import { formatSaoPauloDateTime } from '@/lib/date-time'
 
 type Answer = { id: string; bloco: string; pergunta: string; resposta: string }
+type ProdutoCatalogo = { id: string; nome: string; preco: number }
 type Lead = {
   id: string
   nome: string
@@ -28,6 +29,7 @@ type Gestor = { id: string; nome: string }
 interface Props {
   leads: Lead[]
   gestores: Gestor[]
+  produtos: ProdutoCatalogo[]
 }
 
 const spendOptions = [
@@ -46,11 +48,16 @@ const canvaLinks = [
 
 function formatDateTime(value: string | null) {
   if (!value) return 'Sem horario marcado'
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
+  return formatSaoPauloDateTime(new Date(value))
 }
 
-export function CallVendasForm({ leads, gestores }: Props) {
+function formatMoney(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
+export function CallVendasForm({ leads, gestores, produtos }: Props) {
   const router = useRouter()
+  const produtoInicial = produtos[0]
   const [loading, setLoading] = useState(false)
   const [origin, setOrigin] = useState('FUNIL')
   const [leadId, setLeadId] = useState(leads[0]?.id || '')
@@ -58,8 +65,9 @@ export function CallVendasForm({ leads, gestores }: Props) {
   const [manualAnswers, setManualAnswers] = useState<Record<string, string>>({})
   const [form, setForm] = useState({
     dataHora: '',
-    produto: atlasProducts[0],
-    valor: '',
+    produto: produtoInicial?.nome || '',
+    valor: produtoInicial?.preco ? String(produtoInicial.preco) : '',
+    valorModo: produtoInicial?.preco ? 'catalogo' : 'outro',
     periodoMeses: '1',
     fechou: 'true',
     pago: 'false',
@@ -69,6 +77,7 @@ export function CallVendasForm({ leads, gestores }: Props) {
   const [message, setMessage] = useState('')
 
   const selectedLead = useMemo(() => leads.find((lead) => lead.id === leadId) || null, [leads, leadId])
+  const selectedProduct = useMemo(() => produtos.find((produto) => produto.nome === form.produto) || null, [produtos, form.produto])
   const flatQuestions = useMemo(
     () => questionnaireBlocks.flatMap((block) => block.questions.map((question) => ({ bloco: block.title, pergunta: question }))),
     []
@@ -82,6 +91,24 @@ export function CallVendasForm({ leads, gestores }: Props) {
     setManualLead((prev) => ({ ...prev, [field]: value }))
   }
 
+  function selecionarProduto(nome: string) {
+    const produto = produtos.find((item) => item.nome === nome)
+    setForm((prev) => ({
+      ...prev,
+      produto: nome,
+      valorModo: produto?.preco ? 'catalogo' : 'outro',
+      valor: produto?.preco ? String(produto.preco) : '',
+    }))
+  }
+
+  function selecionarValor(modo: string) {
+    setForm((prev) => ({
+      ...prev,
+      valorModo: modo,
+      valor: modo === 'catalogo' && selectedProduct?.preco ? String(selectedProduct.preco) : '',
+    }))
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     setLoading(true)
@@ -89,9 +116,7 @@ export function CallVendasForm({ leads, gestores }: Props) {
 
     const respostas = flatQuestions.map((item) => ({
       ...item,
-      resposta: item.pergunta === 'Movimentacao mensal'
-        ? manualLead.gastoMensal || manualAnswers[item.pergunta] || ''
-        : manualAnswers[item.pergunta] || '',
+      resposta: manualAnswers[item.pergunta] || '',
     }))
 
     const response = await fetch('/api/calls', {
@@ -163,6 +188,16 @@ export function CallVendasForm({ leads, gestores }: Props) {
               <p className="text-sm text-muted-foreground">{selectedLead.whatsapp} - {formatDateTime(selectedLead.callMarcadaPara)}</p>
             </CardHeader>
             <CardContent className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">Contato</p>
+                <p className="mt-2 text-sm font-medium">E-mail</p>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedLead.email || 'Sem email'}</p>
+              </div>
+              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">Perfil financeiro</p>
+                <p className="mt-2 text-sm font-medium">Gasto/movimentacao mensal</p>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedLead.gastoMensal || 'Nao informado'}</p>
+              </div>
               {selectedLead.respostas.length === 0 && <p className="text-sm text-muted-foreground">Esse lead ainda nao tem respostas salvas.</p>}
               {selectedLead.respostas.map((answer) => (
                 <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
@@ -183,15 +218,15 @@ export function CallVendasForm({ leads, gestores }: Props) {
             <CardContent className="space-y-5">
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2">
-                  <Label>Nome completo *</Label>
+                  <Label>Nome completo</Label>
                   <Input value={manualLead.nome} onChange={(event) => updateManual('nome', event.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>WhatsApp *</Label>
+                  <Label>WhatsApp</Label>
                   <Input value={manualLead.whatsapp} onChange={(event) => updateManual('whatsapp', event.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email *</Label>
+                  <Label>Email</Label>
                   <Input type="email" value={manualLead.email} onChange={(event) => updateManual('email', event.target.value)} />
                 </div>
                 <div className="space-y-2">
@@ -213,7 +248,7 @@ export function CallVendasForm({ leads, gestores }: Props) {
                       <div key={question} className="space-y-2">
                         <Label>{question}</Label>
                         <Textarea
-                          value={question === 'Movimentacao mensal' ? manualLead.gastoMensal || manualAnswers[question] || '' : manualAnswers[question] || ''}
+                          value={manualAnswers[question] || ''}
                           onChange={(event) => setManualAnswers((prev) => ({ ...prev, [question]: event.target.value }))}
                         />
                       </div>
@@ -288,17 +323,34 @@ export function CallVendasForm({ leads, gestores }: Props) {
             </div>
             <div className="space-y-2">
               <Label>Produto escolhido</Label>
-              <Select value={form.produto} onValueChange={(value) => update('produto', value ?? atlasProducts[0])}>
+              <Select value={form.produto} onValueChange={(value) => selecionarProduto(value ?? '')}>
                 <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {atlasProducts.map((product) => <SelectItem key={product} value={product}>{product}</SelectItem>)}
+                  {produtos.map((product) => (
+                    <SelectItem key={product.id} value={product.nome}>
+                      {product.nome}{product.preco > 0 ? ` - ${formatMoney(product.preco)}` : ''}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Valor do produto (R$)</Label>
-                <Input type="number" step="0.01" value={form.valor} onChange={(event) => update('valor', event.target.value)} />
+                <Label>Valor do produto</Label>
+                <Select value={form.valorModo} onValueChange={(value) => selecionarValor(value ?? 'outro')}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {selectedProduct?.preco ? (
+                      <SelectItem value="catalogo">Valor cadastrado - {formatMoney(selectedProduct.preco)}</SelectItem>
+                    ) : null}
+                    <SelectItem value="outro">Outro valor / desconto</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.valorModo === 'outro' ? (
+                  <Input type="number" step="0.01" placeholder="Digite o valor negociado" value={form.valor} onChange={(event) => update('valor', event.target.value)} />
+                ) : (
+                  <Input readOnly value={selectedProduct?.preco ? formatMoney(selectedProduct.preco) : 'Sem valor cadastrado'} />
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Acesso</Label>

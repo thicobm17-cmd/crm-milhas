@@ -30,6 +30,10 @@ function getInitials(nome: string) {
   return nome.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()
 }
 
+function formatMoney(value: number) {
+  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+}
+
 function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader()
@@ -91,6 +95,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
     dataNascimento: cliente.dataNascimento ?? '',
     produtoContratado: cliente.produtoContratado ?? '',
     valorProduto: cliente.metaEconomia ? String(cliente.metaEconomia) : '',
+    valorModo: 'outro',
     observacoes: cliente.observacoes ?? '',
     fotoUrl: cliente.fotoUrl ?? '',
   })
@@ -104,7 +109,17 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
     setForm(prev => ({
       ...prev,
       produtoContratado: nome,
-      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : prev.valorProduto,
+      valorModo: produto && produto.preco > 0 ? 'catalogo' : 'outro',
+      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : '',
+    }))
+  }
+
+  function selecionarValor(modo: string) {
+    const produto = produtos.find(p => p.nome === form.produtoContratado)
+    setForm(prev => ({
+      ...prev,
+      valorModo: modo,
+      valorProduto: modo === 'catalogo' && produto && produto.preco > 0 ? String(produto.preco) : '',
     }))
   }
 
@@ -225,7 +240,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
               )}
             </div>
             <div className="space-y-2">
-              <Label>Nome completo *</Label>
+              <Label>Nome completo</Label>
               <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />
             </div>
             <div className="grid grid-cols-2 gap-3">
@@ -246,8 +261,21 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
                 <Input type="date" value={form.dataNascimento} onChange={e => update('dataNascimento', e.target.value)} />
               </div>
               <div className="space-y-2">
-                <Label>Valor investido (R$)</Label>
-                <Input type="number" step="0.01" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
+                <Label>Valor investido</Label>
+                <Select value={form.valorModo} onValueChange={v => selecionarValor(v ?? 'outro')}>
+                  <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {produtos.find(p => p.nome === form.produtoContratado)?.preco ? (
+                      <SelectItem value="catalogo">Valor cadastrado - {formatMoney(produtos.find(p => p.nome === form.produtoContratado)!.preco)}</SelectItem>
+                    ) : null}
+                    <SelectItem value="outro">Outro valor / desconto</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.valorModo === 'outro' ? (
+                  <Input type="number" step="0.01" placeholder="Digite o valor negociado" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
+                ) : (
+                  <Input readOnly value={produtos.find(p => p.nome === form.produtoContratado)?.preco ? formatMoney(produtos.find(p => p.nome === form.produtoContratado)!.preco) : 'Sem valor cadastrado'} />
+                )}
               </div>
             </div>
             <div className="space-y-2">
@@ -257,7 +285,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
                 <SelectContent>
                   {produtos.map(p => (
                     <SelectItem key={p.id} value={p.nome}>
-                      {p.nome}{p.preco > 0 ? ` — ${p.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+                      {p.nome}{p.preco > 0 ? ` - ${formatMoney(p.preco)}` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>

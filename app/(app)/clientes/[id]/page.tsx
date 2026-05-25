@@ -72,7 +72,6 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const economiaEmissoes = confirmadas.reduce((acc, e) => acc + calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado), 0)
   const economiaProdutos = produtos.filter(p => p.status === 'EMITIDO').reduce((acc, p) => acc + (toNum(p.precoReferencia) - toNum(p.precoAtlas)), 0)
   const economiaTotal = economiaEmissoes + economiaProdutos
-  const totalMilhas = confirmadas.reduce((acc, e) => acc + e.milhasUtilizadas, 0)
   const metaEconomia = toNum(cliente.metaEconomia)
   const roi = metaEconomia > 0 ? ((economiaTotal - metaEconomia) / metaEconomia) * 100 : 0
   const progresso = metaEconomia > 0 ? Math.min((economiaTotal / metaEconomia) * 100, 100) : 0
@@ -172,7 +171,6 @@ export default async function ClienteDetalhePage({ params }: Props) {
             <Plane className="text-blue-500 mx-auto mb-2" size={22} />
             <p className="text-xs text-slate-500">Produtos</p>
             <p className="text-xl font-bold">{confirmadas.length + produtos.length}</p>
-            <p className="text-xs text-slate-400">{formatMilhas(totalMilhas)}</p>
           </CardContent>
         </Card>
 
@@ -206,7 +204,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
         <TabsList>
           <TabsTrigger value="produtos">Produtos de Viagem</TabsTrigger>
           <TabsTrigger value="programas">Programas de Milhas</TabsTrigger>
-          <TabsTrigger value="emissoes">Emissoes (legado)</TabsTrigger>
+          <TabsTrigger value="emissoes">Passagens emitidas</TabsTrigger>
         </TabsList>
 
         {/* PRODUTOS: Passagem / Hotel / Passeio / Seguro */}
@@ -227,13 +225,13 @@ export default async function ClienteDetalhePage({ params }: Props) {
                         <div>
                           <p className="font-medium">
                             {tipoLabels[p.tipo] ?? p.tipo}
-                            {p.origem && p.destino ? ` · ${p.origem} → ${p.destino}` : ''}
-                            {p.local ? ` · ${p.local}` : ''}
-                            {p.nome ? ` · ${p.nome}` : ''}
+                            {p.origem && p.destino ? ` - ${p.origem} -> ${p.destino}` : ''}
+                            {p.local ? ` - ${p.local}` : ''}
+                            {p.nome ? ` - ${p.nome}` : ''}
                           </p>
                           <p className="text-xs text-slate-500">
                             {p.dataInicio ? new Date(p.dataInicio).toLocaleDateString('pt-BR') : 'sem data'}
-                            {p.responsavel?.nome ? ` · resp. ${p.responsavel.nome}` : ''}
+                            {p.responsavel?.nome ? ` - resp. ${p.responsavel.nome}` : ''}
                           </p>
                         </div>
                       </div>
@@ -265,7 +263,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
           <ProgramasMilhasManager clienteId={id} programas={programas} contas={contas} cartoes={cartoes} />
         </TabsContent>
 
-        {/* EMISSOES LEGADO */}
+        {/* PASSAGENS EMITIDAS */}
         <TabsContent value="emissoes" className="mt-4">
           <Card className="border-0 shadow-sm">
             <CardContent className="p-0">
@@ -278,11 +276,11 @@ export default async function ClienteDetalhePage({ params }: Props) {
                         <div className="flex items-center gap-4">
                           <div className="w-2 h-10 rounded-full" style={{ backgroundColor: e.programa?.cor ?? '#6b7280' }} />
                           <div>
-                            <p className="font-medium">{e.origem} → {e.destino}</p>
+                            <p className="font-medium">{e.origem} para {e.destino}</p>
                             <p className="text-xs text-slate-500">
-                              {new Date(e.dataVoo).toLocaleDateString('pt-BR')} · {e.classe} · {e.passageiros} pax
+                              {new Date(e.dataVoo).toLocaleDateString('pt-BR')} - {e.classe} - {e.passageiros} pax
                             </p>
-                            <p className="text-xs text-slate-400">{formatMilhas(e.milhasUtilizadas)} · {e.programa?.nome}</p>
+                            <p className="text-xs text-slate-400">{formatMilhas(e.milhasUtilizadas)} - {e.programa?.nome}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -297,7 +295,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
                 </div>
               ) : (
                 <div className="py-12 text-center text-slate-400">
-                  <p>Nenhuma emissao no sistema legado.</p>
+                  <p>Nenhuma passagem emitida cadastrada.</p>
                 </div>
               )}
             </CardContent>

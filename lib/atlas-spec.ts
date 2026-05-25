@@ -43,10 +43,6 @@ export const leadColumns = [
 
 export const questionnaireBlocks = [
   {
-    title: 'Identificacao',
-    questions: ['Nome completo', 'WhatsApp com DDD', 'E-mail', 'Como nos conheceu', 'Quem indicou, quando houver'],
-  },
-  {
     title: 'Perfil de viagens',
     questions: ['O que mais valoriza ao viajar', 'Viagem dos sonhos', 'Viagens por ano', 'Viagens programadas nos proximos 6 a 12 meses'],
   },
@@ -56,7 +52,7 @@ export const questionnaireBlocks = [
   },
   {
     title: 'Perfil financeiro',
-    questions: ['Movimentacao mensal', 'Predominancia no cartao de credito'],
+    questions: ['Predominancia no cartao de credito'],
   },
   {
     title: 'Contexto e motivacao',

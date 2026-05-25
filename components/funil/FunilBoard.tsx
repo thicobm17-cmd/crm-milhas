@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { leadColumns } from '@/lib/atlas-spec'
+import { formatSaoPauloDateTime } from '@/lib/date-time'
 
 type LeadAnswer = { id: string; bloco: string; pergunta: string; resposta: string }
 type Gestor = { id: string; nome: string }
@@ -47,7 +48,27 @@ function getColumnStatus(lead: Lead) {
 
 function formatDateTime(value: string | null) {
   if (!value) return 'Sem data'
-  return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value))
+  return formatSaoPauloDateTime(new Date(value))
+}
+
+function leadResumo(lead: Lead): LeadAnswer[] {
+  return [
+    { id: `${lead.id}-nome`, bloco: 'Identificacao', pergunta: 'Nome completo', resposta: lead.nome },
+    { id: `${lead.id}-whatsapp`, bloco: 'Identificacao', pergunta: 'WhatsApp', resposta: lead.whatsapp },
+    { id: `${lead.id}-email`, bloco: 'Identificacao', pergunta: 'E-mail', resposta: lead.email },
+    { id: `${lead.id}-origem`, bloco: 'Origem', pergunta: 'Como chegou ate a Atlas', resposta: lead.origem || 'Nao informado' },
+    { id: `${lead.id}-indicacao`, bloco: 'Origem', pergunta: 'Quem indicou', resposta: lead.indicadoPor || 'Nao informado' },
+    { id: `${lead.id}-gasto`, bloco: 'Perfil financeiro', pergunta: 'Gasto/movimentacao mensal', resposta: lead.gastoMensal || 'Nao informado' },
+    {
+      id: `${lead.id}-contato`,
+      bloco: 'Operacao comercial',
+      pergunta: 'Primeiro contato',
+      resposta: lead.primeiroContatoRealizado ? `Realizado por ${lead.primeiroContatoGestor?.nome || 'gestor nao informado'}` : 'Pendente',
+    },
+    { id: `${lead.id}-status-call`, bloco: 'Operacao comercial', pergunta: 'Status da call', resposta: getColumnStatus(lead) },
+    { id: `${lead.id}-data-call`, bloco: 'Operacao comercial', pergunta: 'Data e hora da call', resposta: formatDateTime(lead.callMarcadaPara) },
+    { id: `${lead.id}-follow-up`, bloco: 'Operacao comercial', pergunta: 'Inicio do follow up', resposta: formatDateTime(lead.followUpInicio) },
+  ]
 }
 
 export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
@@ -192,7 +213,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
             <DialogTitle>{selectedLead?.nome}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 md:grid-cols-2">
-            {selectedLead?.respostas.map((answer) => (
+            {selectedLead && [...leadResumo(selectedLead), ...selectedLead.respostas].map((answer) => (
               <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">{answer.bloco}</p>
                 <Label className="mt-2 block">{answer.pergunta}</Label>

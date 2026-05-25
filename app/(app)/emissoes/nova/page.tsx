@@ -115,7 +115,7 @@ function NovaEmissaoForm() {
                 {clienteSelecionado && (clienteSelecionado.cpf || clienteSelecionado.dataNascimento) && (
                   <p className="rounded-md bg-slate-50 p-2 text-xs text-slate-600">
                     {clienteSelecionado.cpf && <>CPF: <span className="font-medium">{clienteSelecionado.cpf}</span></>}
-                    {clienteSelecionado.cpf && clienteSelecionado.dataNascimento && ' · '}
+                    {clienteSelecionado.cpf && clienteSelecionado.dataNascimento && ' - '}
                     {clienteSelecionado.dataNascimento && <>Nascimento: <span className="font-medium">{new Date(clienteSelecionado.dataNascimento).toLocaleDateString('pt-BR')}</span></>}
                   </p>
                 )}
