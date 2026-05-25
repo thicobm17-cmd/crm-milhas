@@ -167,7 +167,15 @@ export default async function FinanceiroPage({ searchParams }: Props) {
                       {t.descricao}
                       {t.recorrente && <Badge className="ml-2 bg-blue-100 text-blue-800">Fixa mensal</Badge>}
                     </p>
-                    <p className="text-xs text-muted-foreground">{t.cliente?.nome || 'Empresa'} - {tipoLabels[t.tipo] || t.tipo}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t.cliente?.nome || 'Empresa'} - {tipoLabels[t.tipo] || t.tipo}
+                      {' · '}
+                      {t.recorrente
+                        ? `desde ${t.createdAt.toLocaleDateString('pt-BR')}`
+                        : (t.pago && t.dataPagamento
+                            ? `pago em ${t.dataPagamento.toLocaleDateString('pt-BR')}`
+                            : `criada em ${t.createdAt.toLocaleDateString('pt-BR')}`)}
+                    </p>
                   </div>
                   {t.recorrente ? (
                     <Badge className="bg-blue-100 text-blue-800">Mensal</Badge>

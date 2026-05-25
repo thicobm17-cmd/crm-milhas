@@ -17,6 +17,14 @@ const tipoItems: Record<string, string> = {
   imposto: 'Imposto de renda',
 }
 
+const mesesItems: Record<string, string> = {
+  '0': 'Nao alterar acesso',
+  '12': 'Renovar +12 meses (anual)',
+  '6': 'Renovar +6 meses',
+  '3': 'Renovar +3 meses',
+  '24': 'Renovar +24 meses',
+}
+
 interface Transacao {
   id: string
   tipo: string
@@ -34,7 +42,7 @@ export function TransacaoActions({ transacao }: { transacao: Transacao }) {
   const [pagarOpen, setPagarOpen] = useState(false)
   const [delOpen, setDelOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
-  const [meses, setMeses] = useState('12')
+  const [meses, setMeses] = useState('0')
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({
@@ -181,15 +189,15 @@ export function TransacaoActions({ transacao }: { transacao: Transacao }) {
           </DialogHeader>
           {transacao.temCliente && (
             <div className="space-y-2">
-              <Label>Duracao do plano (vencimento do acesso)</Label>
-              <Select value={meses} onValueChange={v => setMeses(v ?? '12')}>
+              <Label>Renovar acesso? (a duracao ja foi definida no cadastro)</Label>
+              <Select items={mesesItems} value={meses} onValueChange={v => setMeses(v ?? '0')}>
                 <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="12">12 meses (anual)</SelectItem>
-                  <SelectItem value="6">6 meses</SelectItem>
-                  <SelectItem value="3">3 meses</SelectItem>
-                  <SelectItem value="24">24 meses</SelectItem>
                   <SelectItem value="0">Nao alterar acesso</SelectItem>
+                  <SelectItem value="12">Renovar +12 meses (anual)</SelectItem>
+                  <SelectItem value="6">Renovar +6 meses</SelectItem>
+                  <SelectItem value="3">Renovar +3 meses</SelectItem>
+                  <SelectItem value="24">Renovar +24 meses</SelectItem>
                 </SelectContent>
               </Select>
             </div>

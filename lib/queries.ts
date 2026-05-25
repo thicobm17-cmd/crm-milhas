@@ -93,3 +93,62 @@ export async function getMetaPeriodo(gestorId: string, { mes, ano }: Periodo): P
   const metas = await prisma.metaMensal.findMany({ where })
   return metas.reduce((acc, m) => acc + toNum(m.valor), 0)
 }
+
+const RECEITA_TIPOS = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
+const DESPESA_TIPOS = ['despesa', 'compra_milhas', 'imposto']
+
+export interface PontoMensal {
+  mes: string
+  faturamento: number
+  despesa: number
+  meta: number
+}
+
+const mesesCurto = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+// Serie financeira de 12 meses do ano: faturamento (receitas pagas),
+// despesa (pagas + fixas ativas) e meta de faturamento por mes.
+export async function getSerieFinanceiraAno(gestorId: string, ano: number): Promise<PontoMensal[]> {
+  const inicio = new Date(ano, 0, 1)
+  const fim = new Date(ano + 1, 0, 1)
+
+  const [pagas, recorrentes, metas] = await Promise.all([
+    prisma.transacao.findMany({
+      where: { gestorId, recorrente: false, pago: true, dataPagamento: { gte: inicio, lt: fim } },
+      select: { tipo: true, valor: true, dataPagamento: true },
+    }),
+    prisma.transacao.findMany({
+      where: { gestorId, recorrente: true, createdAt: { lt: fim }, OR: [{ recorrenteAte: null }, { recorrenteAte: { gte: inicio } }] },
+      select: { tipo: true, valor: true, createdAt: true, recorrenteAte: true },
+    }),
+    prisma.metaMensal.findMany({ where: { gestorId, ano } }),
+  ])
+
+  const metaPorMes = new Map<number, number>()
+  metas.forEach(m => metaPorMes.set(m.mes, toNum(m.valor)))
+
+  return Array.from({ length: 12 }, (_, i) => {
+    const mes = i + 1
+    const mInicio = new Date(ano, i, 1)
+    const mFim = new Date(ano, i + 1, 1)
+
+    let faturamento = 0
+    let despesa = 0
+
+    for (const t of pagas) {
+      if (!t.dataPagamento || t.dataPagamento < mInicio || t.dataPagamento >= mFim) continue
+      if (RECEITA_TIPOS.includes(t.tipo)) faturamento += toNum(t.valor)
+      else if (DESPESA_TIPOS.includes(t.tipo)) despesa += toNum(t.valor)
+    }
+
+    // Recorrentes ativas neste mes (comecaram antes do fim e nao terminaram antes do inicio)
+    for (const t of recorrentes) {
+      const ativa = t.createdAt < mFim && (!t.recorrenteAte || t.recorrenteAte >= mInicio)
+      if (!ativa) continue
+      if (RECEITA_TIPOS.includes(t.tipo)) faturamento += toNum(t.valor)
+      else if (DESPESA_TIPOS.includes(t.tipo)) despesa += toNum(t.valor)
+    }
+
+    return { mes: mesesCurto[i], faturamento, despesa, meta: metaPorMes.get(mes) ?? 0 }
+  })
+}

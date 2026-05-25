@@ -2,13 +2,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { getClientesComResumo, toNum, parsePeriodo, intervaloPeriodo, nomesMeses } from '@/lib/queries'
+import { getClientesComResumo, toNum, parsePeriodo, intervaloPeriodo, nomesMeses, getSerieFinanceiraAno } from '@/lib/queries'
 import { dashboardPanels } from '@/lib/atlas-spec'
 import { formatCurrency } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DashboardCharts } from '@/components/dashboard/DashboardCharts'
+import { FinanceLineChart } from '@/components/dashboard/FinanceLineChart'
 import { CheckinButton } from '@/components/dashboard/CheckinButton'
 import { PeriodoFilter } from '@/components/shared/PeriodoFilter'
 import { Bell, Clock3, Plane, TrendingUp } from 'lucide-react'
@@ -40,7 +41,7 @@ export default async function DashboardPage({ searchParams }: Props) {
   const intervalo = intervaloPeriodo(periodo)
   const labelPeriodo = periodo.mes === 0 ? `Ano ${periodo.ano}` : `${nomesMeses[periodo.mes - 1]}/${periodo.ano}`
 
-  const [clientes, emissoesPendentes, transacoes, checkinProdutos] = await Promise.all([
+  const [clientes, emissoesPendentes, transacoes, checkinProdutos, serieFinanceira] = await Promise.all([
     getClientesComResumo(gestorId),
     prisma.emissao.findMany({
       where: { gestorId, status: { not: 'confirmada' } },
@@ -62,6 +63,7 @@ export default async function DashboardPage({ searchParams }: Props) {
       orderBy: { dataInicio: 'asc' },
       take: 6,
     }),
+    getSerieFinanceiraAno(gestorId, periodo.ano),
   ])
 
   const totalEconomia = clientes.reduce((acc, c) => acc + c.economiaTotal, 0)
@@ -113,6 +115,16 @@ export default async function DashboardPage({ searchParams }: Props) {
           </Card>
         ))}
       </div>
+
+      <Card className="atlas-panel">
+        <CardHeader>
+          <CardTitle>Faturamento x Despesa x Meta — {periodo.ano}</CardTitle>
+          <p className="text-sm text-muted-foreground">Receita recebida (verde), despesas (vermelho) e meta de faturamento (linha preta tracejada) mes a mes.</p>
+        </CardHeader>
+        <CardContent>
+          <FinanceLineChart dados={serieFinanceira} ano={periodo.ano} />
+        </CardContent>
+      </Card>
 
       <div className="grid gap-5 xl:grid-cols-[1.25fr_0.75fr]">
         <Card className="atlas-panel">
