@@ -4,6 +4,7 @@ import { getProgramas, toNum, calcEconomia } from '@/lib/queries'
 import { formatCurrency, formatMilhas } from '@/lib/utils'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -71,6 +72,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const metaEconomia = toNum(cliente.metaEconomia)
   const roi = metaEconomia > 0 ? ((economiaTotal - metaEconomia) / metaEconomia) * 100 : 0
   const progresso = metaEconomia > 0 ? Math.min((economiaTotal / metaEconomia) * 100, 100) : 0
+  const initials = cliente.nome.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -78,7 +80,13 @@ export default async function ClienteDetalhePage({ params }: Props) {
         <Link href="/clientes">
           <Button variant="ghost" size="sm"><ArrowLeft size={16} className="mr-1" /> Clientes</Button>
         </Link>
-        <h1 className="text-2xl font-bold text-slate-900 flex-1">{cliente.nome}</h1>
+        <div className="flex flex-1 items-center gap-3">
+          <Avatar className="size-14 border border-[#d7ad68]/40">
+            {cliente.fotoUrl && <AvatarImage src={cliente.fotoUrl} alt={cliente.nome} />}
+            <AvatarFallback className="bg-[#0b3b31] text-[#f4d59a]">{initials}</AvatarFallback>
+          </Avatar>
+          <h1 className="text-2xl font-bold text-slate-900">{cliente.nome}</h1>
+        </div>
         <Badge variant={cliente.ativo ? 'default' : 'secondary'}>{cliente.ativo ? 'Ativo' : 'Inativo'}</Badge>
       </div>
 
@@ -92,6 +100,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
         produtoContratado: cliente.produtoContratado,
         metaEconomia,
         observacoes: cliente.observacoes,
+        fotoUrl: cliente.fotoUrl,
         ativo: cliente.ativo,
       }} />
 

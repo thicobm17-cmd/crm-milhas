@@ -34,6 +34,7 @@ export function CatalogoProdutos() {
     setCarregando(false)
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { carregar() }, [])
 
   async function salvarPreco(id: string) {

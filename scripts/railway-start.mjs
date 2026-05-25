@@ -9,6 +9,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url))
 const nextBin = resolve(scriptDir, '../node_modules/next/dist/bin/next')
 const appPort = process.env.PORT || '3000'
 const publicAliasPort = '3000'
+let backupTimer
 
 function normalizePublicUrl(value) {
   if (!value) return undefined
@@ -74,8 +75,53 @@ async function syncDatabaseInBackground() {
     return
   }
 
+  await runAutomaticBackup('automatic_pre_prisma_sync')
   await runOptionalStep('Prisma db push', npxCommand, ['prisma', 'db', 'push', '--accept-data-loss'])
   await runOptionalStep('Prisma seed', npxCommand, ['prisma', 'db', 'seed'])
+  await runAutomaticBackup('automatic_post_prisma_sync')
+  scheduleAutomaticBackups()
+}
+
+function getBackupIntervalHours() {
+  const value = Number(process.env.BACKUP_INTERVAL_HOURS || '24')
+  return Number.isFinite(value) && value > 0 ? value : 24
+}
+
+async function runAutomaticBackup(reason) {
+  if (process.env.SKIP_DB_BACKUP === '1') {
+    console.log('[startup] SKIP_DB_BACKUP=1, skipping automatic backup.')
+    return
+  }
+
+  try {
+    const { createBackupIfDue } = await import(resolve(scriptDir, 'backup-database.mjs'))
+    const snapshot = await createBackupIfDue({
+      reason,
+      minHours: getBackupIntervalHours(),
+    })
+
+    if (snapshot) {
+      console.log(`[startup] Backup ${snapshot.id} created (${snapshot.sizeBytes} bytes).`)
+    } else {
+      console.log('[startup] Backup already fresh, skipping.')
+    }
+  } catch (error) {
+    console.warn(`[startup] Automatic backup skipped/failed: ${error.message}`)
+  }
+}
+
+function scheduleAutomaticBackups() {
+  if (backupTimer || process.env.SKIP_DB_BACKUP === '1') return
+
+  const intervalMs = getBackupIntervalHours() * 60 * 60 * 1000
+  backupTimer = setInterval(() => {
+    runAutomaticBackup('automatic_interval').catch((error) => {
+      console.warn(`[startup] Scheduled backup failed: ${error.message}`)
+    })
+  }, intervalMs)
+
+  backupTimer.unref?.()
+  console.log(`[startup] Automatic backup scheduled every ${getBackupIntervalHours()}h.`)
 }
 
 function startPublicPortProxy(fromPort, toPort) {
@@ -148,6 +194,7 @@ setTimeout(() => {
 
 function forward(signal) {
   publicProxy?.close()
+  if (backupTimer) clearInterval(backupTimer)
   if (!app.killed) app.kill(signal)
 }
 
@@ -156,6 +203,7 @@ process.on('SIGTERM', () => forward('SIGTERM'))
 
 app.on('exit', (code, signal) => {
   publicProxy?.close()
+  if (backupTimer) clearInterval(backupTimer)
 
   if (signal) {
     console.log(`[startup] Next.js stopped by signal ${signal}.`)

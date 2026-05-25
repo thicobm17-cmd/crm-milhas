@@ -324,3 +324,16 @@ model Notificacao {
 
   @@map("notificacoes")
 }
+
+model BackupSnapshot {
+  id           String   @id @default(cuid())
+  reason       String   @default("manual")
+  status       String   @default("OK")
+  payload      Json
+  recordCounts Json?    @map("record_counts")
+  sizeBytes    Int      @default(0) @map("size_bytes")
+  createdById  String?  @map("created_by_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("backup_snapshots")
+}

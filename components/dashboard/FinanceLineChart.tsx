@@ -34,7 +34,7 @@ export function FinanceLineChart({ dados, ano }: Props) {
         <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc4" />
         <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
         <YAxis tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
-        <Tooltip formatter={(value: number, name: string) => [formatCurrency(Number(value)), name]} contentStyle={{ fontSize: 12 }} />
+        <Tooltip formatter={(value, name) => [formatCurrency(Number(value ?? 0)), String(name)]} contentStyle={{ fontSize: 12 }} />
         <Legend wrapperStyle={{ fontSize: 12 }} />
         <Line type="monotone" dataKey="faturamento" name="Faturamento" stroke="#16a34a" strokeWidth={2.5} dot={{ r: 3 }} />
         <Line type="monotone" dataKey="despesa" name="Despesa" stroke="#dc2626" strokeWidth={2.5} dot={{ r: 3 }} />

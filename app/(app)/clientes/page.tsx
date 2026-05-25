@@ -3,7 +3,7 @@ import { auth } from '@/lib/auth'
 import { getClientesComResumo } from '@/lib/queries'
 import { atlasPrograms, clientProductTypes } from '@/lib/atlas-spec'
 import { formatCurrency } from '@/lib/utils'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -71,6 +71,7 @@ export default async function ClientesPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-12 border border-[#d7ad68]/35">
+                          {c.fotoUrl && <AvatarImage src={c.fotoUrl} alt={c.nome} />}
                           <AvatarFallback className="bg-[#0b3b31] text-[#f4d59a]">{initials}</AvatarFallback>
                         </Avatar>
                         <div>

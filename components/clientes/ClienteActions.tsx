@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { Pencil, Power, Trash2 } from 'lucide-react'
+import { Clipboard, ImageIcon, Pencil, Power, Trash2, Upload, X } from 'lucide-react'
 
 interface ProdutoCatalogo { id: string; nome: string; preco: number }
 
@@ -22,7 +22,52 @@ interface ClienteData {
   produtoContratado: string | null
   metaEconomia: number
   observacoes: string | null
+  fotoUrl: string | null
   ativo: boolean
+}
+
+function getInitials(nome: string) {
+  return nome.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(new Error('Nao foi possivel ler a imagem.'))
+    reader.readAsDataURL(file)
+  })
+}
+
+function loadImage(src: string) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = () => reject(new Error('Imagem invalida.'))
+    img.src = src
+  })
+}
+
+async function compressProfileImage(file: File) {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Envie apenas arquivos de imagem.')
+  }
+
+  const dataUrl = await readFileAsDataUrl(file)
+  const img = await loadImage(dataUrl)
+  const size = 512
+  const canvas = document.createElement('canvas')
+  canvas.width = size
+  canvas.height = size
+  const ctx = canvas.getContext('2d')
+  if (!ctx) throw new Error('Nao foi possivel processar a imagem.')
+
+  const sourceSize = Math.min(img.width, img.height)
+  const sx = (img.width - sourceSize) / 2
+  const sy = (img.height - sourceSize) / 2
+  ctx.drawImage(img, sx, sy, sourceSize, sourceSize, 0, 0, size, size)
+
+  return canvas.toDataURL('image/jpeg', 0.82)
 }
 
 export function ClienteActions({ cliente }: { cliente: ClienteData }) {
@@ -32,6 +77,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [produtos, setProdutos] = useState<ProdutoCatalogo[]>([])
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     fetch('/api/catalogo', { cache: 'no-store' }).then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
@@ -46,6 +92,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
     produtoContratado: cliente.produtoContratado ?? '',
     valorProduto: cliente.metaEconomia ? String(cliente.metaEconomia) : '',
     observacoes: cliente.observacoes ?? '',
+    fotoUrl: cliente.fotoUrl ?? '',
   })
 
   function update(field: string, value: string) {
@@ -59,6 +106,24 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
       produtoContratado: nome,
       valorProduto: produto && produto.preco > 0 ? String(produto.preco) : prev.valorProduto,
     }))
+  }
+
+  async function usarArquivo(file: File | null | undefined) {
+    if (!file) return
+    setError('')
+    try {
+      const fotoUrl = await compressProfileImage(file)
+      setForm(prev => ({ ...prev, fotoUrl }))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Nao foi possivel usar essa imagem.')
+    }
+  }
+
+  async function handlePaste(e: React.ClipboardEvent) {
+    const item = Array.from(e.clipboardData.items).find(i => i.type.startsWith('image/'))
+    if (!item) return
+    e.preventDefault()
+    await usarArquivo(item.getAsFile())
   }
 
   async function salvarEdicao(e: React.FormEvent) {
@@ -117,7 +182,48 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Editar cliente</DialogTitle></DialogHeader>
-          <form onSubmit={salvarEdicao} className="mt-2 space-y-4">
+          <form onSubmit={salvarEdicao} onPaste={handlePaste} className="mt-2 space-y-4">
+            <div className="rounded-lg border border-dashed border-[#d7ad68]/45 bg-white/55 p-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex size-16 items-center justify-center overflow-hidden rounded-full border border-[#d7ad68]/50 bg-[#0b3b31] text-lg font-semibold text-[#f4d59a]">
+                  {form.fotoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={form.fotoUrl} alt={`Foto de ${form.nome}`} className="size-full object-cover" />
+                  ) : (
+                    getInitials(form.nome || cliente.nome)
+                  )}
+                </div>
+                <div className="min-w-[190px] flex-1">
+                  <p className="text-sm font-medium text-[#11231f]">Foto do cliente</p>
+                  <p className="text-xs text-muted-foreground">Cole com Ctrl+V ou anexe uma imagem. Ela sera compactada automaticamente.</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={e => usarArquivo(e.target.files?.[0])}
+                />
+                <div className="flex gap-2">
+                  <Button type="button" size="sm" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                    <Upload size={14} /> Anexar
+                  </Button>
+                  <Button type="button" size="icon-sm" variant="outline" title="Cole uma imagem com Ctrl+V dentro deste modal">
+                    <Clipboard size={14} />
+                  </Button>
+                  {form.fotoUrl && (
+                    <Button type="button" size="icon-sm" variant="ghost" className="text-red-600" title="Remover foto" onClick={() => update('fotoUrl', '')}>
+                      <X size={14} />
+                    </Button>
+                  )}
+                </div>
+              </div>
+              {!form.fotoUrl && (
+                <div className="mt-3 flex items-center gap-2 rounded-md bg-[#f7ead2]/70 p-2 text-xs text-[#8f7040]">
+                  <ImageIcon size={14} /> Dica: copie um print ou foto e pressione Ctrl+V com este modal aberto.
+                </div>
+              )}
+            </div>
             <div className="space-y-2">
               <Label>Nome completo *</Label>
               <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />

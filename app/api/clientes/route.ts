@@ -2,6 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
+const MAX_PROFILE_IMAGE_LENGTH = 900_000
+
+function validateFotoUrl(fotoUrl: unknown) {
+  if (fotoUrl === undefined) return undefined
+  if (!fotoUrl) return null
+  if (typeof fotoUrl !== 'string') throw new Error('Imagem invalida.')
+  if (!fotoUrl.startsWith('data:image/')) throw new Error('A foto precisa ser uma imagem valida.')
+  if (fotoUrl.length > MAX_PROFILE_IMAGE_LENGTH) throw new Error('A imagem ficou grande demais. Use uma foto menor.')
+  return fotoUrl
+}
+
 export async function GET() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
@@ -20,9 +31,15 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
   const body = await request.json()
-  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes, mesesAcesso } = body
+  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes, mesesAcesso, fotoUrl } = body
 
   if (!nome) return NextResponse.json({ error: 'Nome e obrigatorio.' }, { status: 400 })
+  let fotoValidada: string | null | undefined
+  try {
+    fotoValidada = validateFotoUrl(fotoUrl)
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Imagem invalida.' }, { status: 400 })
+  }
 
   const valorInvestido = parseFloat(valorProduto) || 0
   // Plano anual por padrao (12 meses). Periodo de acesso = quando o plano vence.
@@ -46,6 +63,7 @@ export async function POST(request: NextRequest) {
       acessoInicio: valorInvestido > 0 ? hoje : null,
       acessoFim,
       observacoes: observacoes || null,
+      ...(fotoValidada !== undefined ? { fotoUrl: fotoValidada } : {}),
     },
   })
 
@@ -88,6 +106,12 @@ export async function PATCH(request: NextRequest) {
   // Edicao geral dos dados do cliente
   const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes, fotoUrl } = body
   const valorInvestido = valorProduto !== undefined && valorProduto !== '' ? parseFloat(valorProduto) : undefined
+  let fotoValidada: string | null | undefined
+  try {
+    fotoValidada = validateFotoUrl(fotoUrl)
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Imagem invalida.' }, { status: 400 })
+  }
 
   const cliente = await prisma.cliente.update({
     where: { id },
@@ -100,7 +124,7 @@ export async function PATCH(request: NextRequest) {
       ...(produtoContratado !== undefined ? { produtoContratado: produtoContratado || null } : {}),
       ...(valorInvestido !== undefined && !Number.isNaN(valorInvestido) ? { metaEconomia: valorInvestido } : {}),
       ...(observacoes !== undefined ? { observacoes: observacoes || null } : {}),
-      ...(fotoUrl !== undefined ? { fotoUrl: fotoUrl || null } : {}),
+      ...(fotoValidada !== undefined ? { fotoUrl: fotoValidada } : {}),
     },
   })
 

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PerfilForm } from '@/components/configuracoes/PerfilForm'
 import { GestoresFila } from '@/components/configuracoes/GestoresFila'
 import { CatalogoProdutos } from '@/components/configuracoes/CatalogoProdutos'
+import { BackupPanel } from '@/components/configuracoes/BackupPanel'
 import { ShieldCheck, Tag, UserCog } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -14,7 +15,7 @@ export default async function ConfiguracoesPage() {
   const session = await auth()
   const meId = session!.user.id
 
-  const [gestor, todos] = await Promise.all([
+  const [gestor, todos, backupsRaw] = await Promise.all([
     prisma.gestor.findUnique({
       where: { id: meId },
       select: { id: true, nome: true, email: true, telefone: true, cargo: true },
@@ -23,11 +24,20 @@ export default async function ConfiguracoesPage() {
       select: { id: true, nome: true, email: true, cargo: true, autorizado: true },
       orderBy: { createdAt: 'asc' },
     }),
+    prisma.backupSnapshot.findMany({
+      select: { id: true, reason: true, status: true, recordCounts: true, sizeBytes: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    }),
   ])
 
   const souCEO = gestor?.cargo === 'CEO'
   const pendentes = todos.filter(g => !g.autorizado)
   const equipe = todos.filter(g => g.autorizado)
+  const backups = backupsRaw.map((backup) => ({
+    ...backup,
+    createdAt: backup.createdAt.toISOString(),
+  }))
 
   return (
     <div className="space-y-6">
@@ -66,6 +76,16 @@ export default async function ConfiguracoesPage() {
         </CardHeader>
         <CardContent>
           <CatalogoProdutos />
+        </CardContent>
+      </Card>
+
+      <Card className="atlas-panel">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><ShieldCheck size={18} /> Backups automaticos</CardTitle>
+          <p className="text-sm text-muted-foreground">Snapshots completos do banco para baixar e guardar fora do Railway.</p>
+        </CardHeader>
+        <CardContent>
+          <BackupPanel backups={backups} souCEO={souCEO} />
         </CardContent>
       </Card>
 
