@@ -28,6 +28,7 @@ model Gestor {
   callsParticipante CallParticipante[]
   produtosResponsavel ProdutoCliente[]
   notificacoes Notificacao[]
+  movimentacoesMilhas MovimentacaoMilhas[]
 
   @@map("gestores")
 }
@@ -105,6 +106,7 @@ model ContaPrograma {
   cliente  Cliente  @relation(fields: [clienteId], references: [id], onDelete: Cascade)
   gestor   Gestor   @relation(fields: [gestorId], references: [id], onDelete: Cascade)
   programa Programa @relation(fields: [programaId], references: [id])
+  movimentacoes MovimentacaoMilhas[]
 
   @@map("contas_programas")
 }
@@ -119,8 +121,30 @@ model CartaoCredito {
   createdAt        DateTime @default(now()) @map("created_at")
 
   cliente Cliente @relation(fields: [clienteId], references: [id], onDelete: Cascade)
+  movimentacoes MovimentacaoMilhas[]
 
   @@map("cartoes_credito")
+}
+
+model MovimentacaoMilhas {
+  id              String   @id @default(cuid())
+  contaProgramaId String   @map("conta_programa_id")
+  gestorId        String   @map("gestor_id")
+  cartaoId        String?  @map("cartao_id")
+  tipo            String   @default("MANUAL")
+  quantidade      Int
+  custoTotal      Decimal  @default(0) @map("custo_total") @db.Decimal(10, 2)
+  descricao       String?
+  faturaValor     Decimal? @map("fatura_valor") @db.Decimal(10, 2)
+  dolarCotacao    Decimal? @map("dolar_cotacao") @db.Decimal(10, 4)
+  pontosPorDolar  Decimal? @map("pontos_por_dolar") @db.Decimal(10, 2)
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  contaPrograma ContaPrograma @relation(fields: [contaProgramaId], references: [id], onDelete: Cascade)
+  gestor        Gestor        @relation(fields: [gestorId], references: [id], onDelete: Cascade)
+  cartao        CartaoCredito? @relation(fields: [cartaoId], references: [id], onDelete: SetNull)
+
+  @@map("movimentacoes_milhas")
 }
 
 model Lead {

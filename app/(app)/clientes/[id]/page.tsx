@@ -10,11 +10,10 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ArrowLeft, Plane, DollarSign, Target, Phone, Mail, TrendingUp, Hotel, Map, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
-import { AdicionarContaForm } from '@/components/clientes/AdicionarContaForm'
 import { ClienteActions } from '@/components/clientes/ClienteActions'
-import { ContaActions } from '@/components/clientes/ContaActions'
 import { AdicionarProdutoForm } from '@/components/clientes/AdicionarProdutoForm'
 import { ProdutoActions } from '@/components/clientes/ProdutoActions'
+import { ProgramasMilhasManager } from '@/components/clientes/ProgramasMilhasManager'
 import { notFound } from 'next/navigation'
 
 export const dynamic = 'force-dynamic'
@@ -42,11 +41,15 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const session = await auth()
   const gestorId = session!.user.id
 
-  const [cliente, contas, emissoes, produtos, programas, gestores] = await Promise.all([
+  const [cliente, contasRaw, emissoes, produtos, programas, gestores, cartoesRaw] = await Promise.all([
     prisma.cliente.findFirst({ where: { id, gestorId } }),
     prisma.contaPrograma.findMany({
       where: { clienteId: id, gestorId },
-      include: { programa: true },
+      include: {
+        programa: true,
+        movimentacoes: { orderBy: { createdAt: 'desc' } },
+      },
+      orderBy: { createdAt: 'asc' },
     }),
     prisma.emissao.findMany({
       where: { clienteId: id, gestorId },
@@ -60,6 +63,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
     }),
     getProgramas(),
     prisma.gestor.findMany({ where: { autorizado: true }, select: { id: true, nome: true }, orderBy: { nome: 'asc' } }),
+    prisma.cartaoCredito.findMany({ where: { clienteId: id, cliente: { gestorId } }, orderBy: { createdAt: 'asc' } }),
   ])
 
   if (!cliente) notFound()
@@ -73,6 +77,33 @@ export default async function ClienteDetalhePage({ params }: Props) {
   const roi = metaEconomia > 0 ? ((economiaTotal - metaEconomia) / metaEconomia) * 100 : 0
   const progresso = metaEconomia > 0 ? Math.min((economiaTotal / metaEconomia) * 100, 100) : 0
   const initials = cliente.nome.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()
+  const contas = contasRaw.map((conta) => ({
+    id: conta.id,
+    programaId: conta.programaId,
+    numeroConta: conta.numeroConta,
+    saldoAtual: conta.saldoAtual,
+    valorMilheiro: conta.valorMilheiro ? toNum(conta.valorMilheiro) : null,
+    clubeMensalMilhas: conta.clubeMensalMilhas,
+    custoMensal: conta.custoMensal ? toNum(conta.custoMensal) : null,
+    ultimaAtualizacaoSaldo: conta.ultimaAtualizacaoSaldo?.toISOString() || null,
+    ultimaVisualizacao: conta.ultimaVisualizacao?.toISOString() || null,
+    programa: conta.programa,
+    movimentacoes: conta.movimentacoes.map((mov) => ({
+      id: mov.id,
+      tipo: mov.tipo,
+      quantidade: mov.quantidade,
+      custoTotal: toNum(mov.custoTotal),
+      descricao: mov.descricao,
+      createdAt: mov.createdAt.toISOString(),
+    })),
+  }))
+  const cartoes = cartoesRaw.map((cartao) => ({
+    id: cartao.id,
+    nome: cartao.nome,
+    pontosPorDolar: toNum(cartao.pontosPorDolar),
+    salasVipTotal: cartao.salasVipTotal,
+    salasVipUsadas: cartao.salasVipUsadas,
+  }))
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -231,36 +262,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
 
         {/* PROGRAMAS DE MILHAS */}
         <TabsContent value="programas" className="mt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {contas.map(conta => (
-              <Card key={conta.id} className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: conta.programa.cor }} />
-                      <div>
-                        <p className="font-medium">{conta.programa.nome}</p>
-                        {conta.numeroConta && <p className="text-xs text-slate-500">Conta: {conta.numeroConta}</p>}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-right">
-                        <p className="font-bold text-blue-600">{new Intl.NumberFormat('pt-BR').format(conta.saldoAtual)}</p>
-                        <p className="text-xs text-slate-500">milhas</p>
-                      </div>
-                      <ContaActions id={conta.id} saldoAtual={conta.saldoAtual} numeroConta={conta.numeroConta} />
-                    </div>
-                  </div>
-                  {conta.ultimaAtualizacaoSaldo && (
-                    <p className="text-xs text-slate-400 mt-2">
-                      Atualizado: {new Date(conta.ultimaAtualizacaoSaldo).toLocaleDateString('pt-BR')}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-            <AdicionarContaForm clienteId={id} programas={programas} />
-          </div>
+          <ProgramasMilhasManager clienteId={id} programas={programas} contas={contas} cartoes={cartoes} />
         </TabsContent>
 
         {/* EMISSOES LEGADO */}

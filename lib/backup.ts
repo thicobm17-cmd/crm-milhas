@@ -8,6 +8,7 @@ const MODEL_EXPORTS = [
   ['clientes', 'cliente'],
   ['contasProgramas', 'contaPrograma'],
   ['cartoesCredito', 'cartaoCredito'],
+  ['movimentacoesMilhas', 'movimentacaoMilhas'],
   ['leads', 'lead'],
   ['leadRespostas', 'leadResposta'],
   ['callsVendas', 'callVenda'],
