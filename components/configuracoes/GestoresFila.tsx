@@ -106,8 +106,8 @@ export function GestoresFila({ pendentes, equipe, meId, souCEO }: Props) {
                 <p className="text-xs text-[#e8d3ab]/65">{g.email}</p>
               </div>
               <div className="flex items-center gap-2">
-                <Select value={g.cargo} onValueChange={v => definirCargo(g.id, v ?? g.cargo)} disabled={g.id === meId || loading === g.id}>
-                  <SelectTrigger className="h-8 w-[120px] bg-white/90"><SelectValue /></SelectTrigger>
+                <Select items={{ CEO: 'CEO', GESTOR: 'Gestor de Milhas' }} value={g.cargo} onValueChange={v => definirCargo(g.id, v ?? g.cargo)} disabled={g.id === meId || loading === g.id}>
+                  <SelectTrigger className="h-8 w-[150px] bg-white text-[#11231f]"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="CEO">CEO</SelectItem>
                     <SelectItem value="GESTOR">Gestor de Milhas</SelectItem>

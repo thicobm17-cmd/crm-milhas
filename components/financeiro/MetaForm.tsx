@@ -49,7 +49,7 @@ export function MetaForm({ mes, ano, valorAtual, label }: Props) {
             placeholder="0,00"
             value={valor}
             onChange={e => setValor(e.target.value)}
-            className="bg-white/90"
+            className="bg-white text-[#11231f] placeholder:text-slate-400"
           />
           <Button type="submit" disabled={loading} className="bg-[#d7ad68] text-[#081613] hover:bg-[#e5be7c]">
             {loading ? '...' : 'Salvar'}
