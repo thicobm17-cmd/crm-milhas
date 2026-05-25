@@ -26,6 +26,7 @@ export default function NovoClientePage() {
     dataNascimento: '',
     produtoContratado: '',
     valorProduto: '',
+    mesesAcesso: '12',
     observacoes: '',
   })
 
@@ -130,6 +131,19 @@ export default function NovoClientePage() {
                   <Label>Valor pago/investido no produto (R$)</Label>
                   <Input type="number" step="0.01" placeholder="0,00" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
                   <p className="text-xs text-muted-foreground">Vira a meta de economia do cliente e entra como receita no Financeiro.</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Duracao do plano</Label>
+                  <Select value={form.mesesAcesso} onValueChange={v => update('mesesAcesso', v ?? '12')}>
+                    <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="12">12 meses (anual)</SelectItem>
+                      <SelectItem value="6">6 meses</SelectItem>
+                      <SelectItem value="3">3 meses</SelectItem>
+                      <SelectItem value="24">24 meses</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">Define quando o acesso do cliente vence.</p>
                 </div>
               </div>
             </div>

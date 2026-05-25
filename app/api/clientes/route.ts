@@ -20,14 +20,16 @@ export async function POST(request: NextRequest) {
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
   const body = await request.json()
-  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes } = body
+  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes, mesesAcesso } = body
 
   if (!nome) return NextResponse.json({ error: 'Nome e obrigatorio.' }, { status: 400 })
 
   const valorInvestido = parseFloat(valorProduto) || 0
+  // Plano anual por padrao (12 meses). Periodo de acesso = quando o plano vence.
+  const meses = parseInt(mesesAcesso) || 12
   const hoje = new Date()
   const acessoFim = valorInvestido > 0 ? new Date(hoje) : null
-  if (acessoFim) acessoFim.setMonth(acessoFim.getMonth() + 1)
+  if (acessoFim) acessoFim.setMonth(acessoFim.getMonth() + meses)
 
   const cliente = await prisma.cliente.create({
     data: {

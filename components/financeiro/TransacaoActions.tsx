@@ -18,7 +18,7 @@ export function TransacaoActions({ id, pago, temCliente }: Props) {
   const router = useRouter()
   const [pagarOpen, setPagarOpen] = useState(false)
   const [delOpen, setDelOpen] = useState(false)
-  const [meses, setMeses] = useState('0')
+  const [meses, setMeses] = useState('12')
   const [loading, setLoading] = useState(false)
 
   async function confirmarPagamento() {
@@ -73,20 +73,21 @@ export function TransacaoActions({ id, pago, temCliente }: Props) {
             <DialogTitle>Confirmar pagamento</DialogTitle>
             <DialogDescription>
               {temCliente
-                ? 'Ao confirmar, voce pode somar o periodo de acesso do cliente ao produto (1 a 12 meses).'
+                ? 'Plano anual: ao confirmar, define quando o acesso do cliente vence. Nao ha cobranca mensal.'
                 : 'Confirmar o recebimento desta transacao.'}
             </DialogDescription>
           </DialogHeader>
           {temCliente && (
             <div className="space-y-2">
-              <Label>Periodo de acesso ao produto</Label>
-              <Select value={meses} onValueChange={v => setMeses(v ?? '0')}>
+              <Label>Duracao do plano (vencimento do acesso)</Label>
+              <Select value={meses} onValueChange={v => setMeses(v ?? '12')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="12">12 meses (anual)</SelectItem>
+                  <SelectItem value="6">6 meses</SelectItem>
+                  <SelectItem value="3">3 meses</SelectItem>
+                  <SelectItem value="24">24 meses</SelectItem>
                   <SelectItem value="0">Nao alterar acesso</SelectItem>
-                  {Array.from({ length: 12 }, (_, i) => String(i + 1)).map(m => (
-                    <SelectItem key={m} value={m}>{m} {m === '1' ? 'mes' : 'meses'}</SelectItem>
-                  ))}
                 </SelectContent>
               </Select>
             </div>
