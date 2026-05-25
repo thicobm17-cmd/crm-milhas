@@ -88,6 +88,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
         email: cliente.email,
         telefone: cliente.telefone,
         cpf: cliente.cpf,
+        dataNascimento: cliente.dataNascimento ? cliente.dataNascimento.toISOString().slice(0, 10) : null,
         produtoContratado: cliente.produtoContratado,
         metaEconomia,
         observacoes: cliente.observacoes,
@@ -100,6 +101,12 @@ export default async function ClienteDetalhePage({ params }: Props) {
             <h3 className="font-medium text-slate-700">Contato</h3>
             {cliente.email && <div className="flex items-center gap-2 text-sm text-slate-600"><Mail size={14} /> {cliente.email}</div>}
             {cliente.telefone && <div className="flex items-center gap-2 text-sm text-slate-600"><Phone size={14} /> {cliente.telefone}</div>}
+            {cliente.cpf && (
+              <p className="text-sm"><span className="text-slate-500">CPF:</span>{' '}<span className="font-medium">{cliente.cpf}</span></p>
+            )}
+            {cliente.dataNascimento && (
+              <p className="text-sm"><span className="text-slate-500">Nascimento:</span>{' '}<span className="font-medium">{new Date(cliente.dataNascimento).toLocaleDateString('pt-BR')}</span></p>
+            )}
             {cliente.produtoContratado && (
               <p className="text-sm"><span className="text-slate-500">Produto:</span>{' '}<span className="font-medium">{cliente.produtoContratado}</span></p>
             )}

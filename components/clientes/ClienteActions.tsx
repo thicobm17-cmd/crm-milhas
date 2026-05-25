@@ -17,6 +17,7 @@ interface ClienteData {
   email: string | null
   telefone: string | null
   cpf: string | null
+  dataNascimento: string | null
   produtoContratado: string | null
   metaEconomia: number
   observacoes: string | null
@@ -35,6 +36,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
     email: cliente.email ?? '',
     telefone: cliente.telefone ?? '',
     cpf: cliente.cpf ?? '',
+    dataNascimento: cliente.dataNascimento ?? '',
     produtoContratado: cliente.produtoContratado ?? '',
     valorProduto: cliente.metaEconomia ? String(cliente.metaEconomia) : '',
     observacoes: cliente.observacoes ?? '',
@@ -117,6 +119,10 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
               <div className="space-y-2">
                 <Label>CPF</Label>
                 <Input value={form.cpf} onChange={e => update('cpf', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Data de nascimento</Label>
+                <Input type="date" value={form.dataNascimento} onChange={e => update('dataNascimento', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Valor investido (R$)</Label>

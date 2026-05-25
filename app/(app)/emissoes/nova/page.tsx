@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ArrowLeft, TrendingUp } from 'lucide-react'
 import Link from 'next/link'
 
-interface ClienteSimples { id: string; nome: string }
+interface ClienteSimples { id: string; nome: string; cpf: string | null; dataNascimento: string | null }
 interface Programa { id: number; nome: string; cor: string; companhia: string }
 
 function NovaEmissaoForm() {
@@ -43,6 +43,8 @@ function NovaEmissaoForm() {
   const economia = (parseFloat(form.precoMercado) || 0) -
     (parseFloat(form.taxasPagas) || 0) -
     (parseFloat(form.feeCobrado) || 0)
+
+  const clienteSelecionado = clientes.find(c => c.id === form.clienteId)
 
   useEffect(() => {
     async function load() {
@@ -110,6 +112,13 @@ function NovaEmissaoForm() {
                     {clientes.map(c => <SelectItem key={c.id} value={c.id}>{c.nome}</SelectItem>)}
                   </SelectContent>
                 </Select>
+                {clienteSelecionado && (clienteSelecionado.cpf || clienteSelecionado.dataNascimento) && (
+                  <p className="rounded-md bg-slate-50 p-2 text-xs text-slate-600">
+                    {clienteSelecionado.cpf && <>CPF: <span className="font-medium">{clienteSelecionado.cpf}</span></>}
+                    {clienteSelecionado.cpf && clienteSelecionado.dataNascimento && ' · '}
+                    {clienteSelecionado.dataNascimento && <>Nascimento: <span className="font-medium">{new Date(clienteSelecionado.dataNascimento).toLocaleDateString('pt-BR')}</span></>}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

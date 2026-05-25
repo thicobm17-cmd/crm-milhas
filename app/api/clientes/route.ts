@@ -8,7 +8,7 @@ export async function GET() {
 
   const clientes = await prisma.cliente.findMany({
     where: { gestorId: session.user.id, ativo: true },
-    select: { id: true, nome: true },
+    select: { id: true, nome: true, cpf: true, dataNascimento: true },
     orderBy: { nome: 'asc' },
   })
 
