@@ -31,7 +31,7 @@ export default function NovoClientePage() {
   })
 
   useEffect(() => {
-    fetch('/api/catalogo').then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
+    fetch('/api/catalogo', { cache: 'no-store' }).then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
   }, [])
 
   function update(field: string, value: string) {

@@ -27,7 +27,7 @@ export function CatalogoProdutos() {
   const [adicionando, setAdicionando] = useState(false)
 
   async function carregar() {
-    const res = await fetch('/api/catalogo')
+    const res = await fetch('/api/catalogo', { cache: 'no-store' })
     const data: Produto[] = await res.json()
     setProdutos(data)
     setPrecos(Object.fromEntries(data.map(p => [p.id, p.preco ? String(p.preco) : ''])))
@@ -38,12 +38,17 @@ export function CatalogoProdutos() {
 
   async function salvarPreco(id: string) {
     setSalvandoId(id)
-    await fetch('/api/catalogo', {
+    const res = await fetch('/api/catalogo', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, preco: precos[id] }),
     })
-    await carregar()
+    const data = await res.json().catch(() => null)
+    // Atualiza na hora com o valor confirmado pelo servidor (sem depender de recarregar)
+    if (res.ok && data && typeof data.preco === 'number') {
+      setProdutos(prev => prev.map(p => (p.id === id ? { ...p, preco: data.preco } : p)))
+      setPrecos(prev => ({ ...prev, [id]: data.preco ? String(data.preco) : '' }))
+    }
     setSalvandoId('')
   }
 

@@ -34,7 +34,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
   const [produtos, setProdutos] = useState<ProdutoCatalogo[]>([])
 
   useEffect(() => {
-    fetch('/api/catalogo').then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
+    fetch('/api/catalogo', { cache: 'no-store' }).then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
   }, [])
 
   const [form, setForm] = useState({
