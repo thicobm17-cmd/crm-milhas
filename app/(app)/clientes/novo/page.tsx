@@ -1,10 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
-import { atlasProducts } from '@/lib/atlas-products'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,10 +11,13 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 
+interface ProdutoCatalogo { id: string; nome: string; preco: number }
+
 export default function NovoClientePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [produtos, setProdutos] = useState<ProdutoCatalogo[]>([])
   const [form, setForm] = useState({
     nome: '',
     email: '',
@@ -27,8 +29,22 @@ export default function NovoClientePage() {
     observacoes: '',
   })
 
+  useEffect(() => {
+    fetch('/api/catalogo').then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
+  }, [])
+
   function update(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  // Ao escolher um produto, preenche o valor investido com o preco do catalogo
+  function selecionarProduto(nome: string) {
+    const produto = produtos.find(p => p.nome === nome)
+    setForm(prev => ({
+      ...prev,
+      produtoContratado: nome,
+      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : prev.valorProduto,
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -98,19 +114,22 @@ export default function NovoClientePage() {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Produto contratado</Label>
-                  <Select value={form.produtoContratado} onValueChange={v => update('produtoContratado', v ?? '')}>
+                  <Select value={form.produtoContratado} onValueChange={v => selecionarProduto(v ?? '')}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
                     <SelectContent>
-                      {atlasProducts.map(product => (
-                        <SelectItem key={product} value={product}>{product}</SelectItem>
+                      {produtos.map(product => (
+                        <SelectItem key={product.id} value={product.nome}>
+                          {product.nome}{product.preco > 0 ? ` — ${product.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
+                  <p className="text-xs text-muted-foreground">Gerencie produtos e precos em Configuracoes.</p>
                 </div>
                 <div className="space-y-2">
                   <Label>Valor pago/investido no produto (R$)</Label>
                   <Input type="number" step="0.01" placeholder="0,00" value={form.valorProduto} onChange={e => update('valorProduto', e.target.value)} />
-                  <p className="text-xs text-muted-foreground">Este valor vira a meta de economia do cliente.</p>
+                  <p className="text-xs text-muted-foreground">Vira a meta de economia do cliente e entra como receita no Financeiro.</p>
                 </div>
               </div>
             </div>

@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PerfilForm } from '@/components/configuracoes/PerfilForm'
 import { GestoresFila } from '@/components/configuracoes/GestoresFila'
-import { ShieldCheck, UserCog } from 'lucide-react'
+import { CatalogoProdutos } from '@/components/configuracoes/CatalogoProdutos'
+import { ShieldCheck, Tag, UserCog } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,6 +58,16 @@ export default async function ConfiguracoesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card className="atlas-panel">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2"><Tag size={18} /> Produtos e precos</CardTitle>
+          <p className="text-sm text-muted-foreground">Defina os precos dos seus produtos. Ao lancar um produto no cliente, o valor entra como receita no Financeiro.</p>
+        </CardHeader>
+        <CardContent>
+          <CatalogoProdutos />
+        </CardContent>
+      </Card>
 
       <Card className="atlas-panel">
         <CardHeader>

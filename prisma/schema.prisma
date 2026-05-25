@@ -297,6 +297,17 @@ model Renovacao {
   @@map("renovacoes")
 }
 
+model ProdutoCatalogo {
+  id        String   @id @default(cuid())
+  gestorId  String   @map("gestor_id")
+  nome      String
+  preco     Decimal  @default(0) @db.Decimal(10, 2)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("produtos_catalogo")
+}
+
 model Notificacao {
   id        String   @id @default(cuid())
   gestorId  String?  @map("gestor_id")

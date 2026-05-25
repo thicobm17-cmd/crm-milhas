@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
-import { atlasProducts } from '@/lib/atlas-products'
 import { Pencil, Power, Trash2 } from 'lucide-react'
+
+interface ProdutoCatalogo { id: string; nome: string; preco: number }
 
 interface ClienteData {
   id: string
@@ -30,6 +31,11 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
   const [delOpen, setDelOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [produtos, setProdutos] = useState<ProdutoCatalogo[]>([])
+
+  useEffect(() => {
+    fetch('/api/catalogo').then(r => r.json()).then(setProdutos).catch(() => setProdutos([]))
+  }, [])
 
   const [form, setForm] = useState({
     nome: cliente.nome,
@@ -44,6 +50,15 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
 
   function update(field: string, value: string) {
     setForm(prev => ({ ...prev, [field]: value }))
+  }
+
+  function selecionarProduto(nome: string) {
+    const produto = produtos.find(p => p.nome === nome)
+    setForm(prev => ({
+      ...prev,
+      produtoContratado: nome,
+      valorProduto: produto && produto.preco > 0 ? String(produto.preco) : prev.valorProduto,
+    }))
   }
 
   async function salvarEdicao(e: React.FormEvent) {
@@ -131,10 +146,14 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
             </div>
             <div className="space-y-2">
               <Label>Produto contratado</Label>
-              <Select value={form.produtoContratado} onValueChange={v => update('produtoContratado', v ?? '')}>
+              <Select value={form.produtoContratado} onValueChange={v => selecionarProduto(v ?? '')}>
                 <SelectTrigger className="w-full"><SelectValue placeholder="Selecione o produto" /></SelectTrigger>
                 <SelectContent>
-                  {atlasProducts.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                  {produtos.map(p => (
+                    <SelectItem key={p.id} value={p.nome}>
+                      {p.nome}{p.preco > 0 ? ` — ${p.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
