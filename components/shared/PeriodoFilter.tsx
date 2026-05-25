@@ -32,6 +32,8 @@ export function PeriodoFilter({ mes, ano }: Props) {
 
   const anoAtual = new Date().getFullYear()
   const anos = [anoAtual - 2, anoAtual - 1, anoAtual, anoAtual + 1].map(String)
+  const mesItems = Object.fromEntries(meses.map(m => [m.value, m.label]))
+  const anoItems = Object.fromEntries(anos.map(a => [a, a]))
 
   function aplicar(campo: 'mes' | 'ano', valor: string) {
     const params = new URLSearchParams(searchParams.toString())
@@ -43,13 +45,13 @@ export function PeriodoFilter({ mes, ano }: Props) {
   return (
     <div className="flex items-center gap-2">
       <CalendarDays size={16} className="text-[#8f7040]" />
-      <Select value={String(mes)} onValueChange={v => aplicar('mes', v ?? '0')}>
+      <Select items={mesItems} value={String(mes)} onValueChange={v => aplicar('mes', v ?? '0')}>
         <SelectTrigger className="h-9 w-[140px] bg-white/70"><SelectValue /></SelectTrigger>
         <SelectContent>
           {meses.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}
         </SelectContent>
       </Select>
-      <Select value={String(ano)} onValueChange={v => aplicar('ano', v ?? String(anoAtual))}>
+      <Select items={anoItems} value={String(ano)} onValueChange={v => aplicar('ano', v ?? String(anoAtual))}>
         <SelectTrigger className="h-9 w-[100px] bg-white/70"><SelectValue /></SelectTrigger>
         <SelectContent>
           {anos.map(a => <SelectItem key={a} value={a}>{a}</SelectItem>)}

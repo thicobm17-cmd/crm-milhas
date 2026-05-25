@@ -16,6 +16,23 @@ interface Props {
   searchParams: Promise<{ mes?: string; ano?: string }>
 }
 
+const receitaTipos = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
+const despesaTipos = ['despesa', 'compra_milhas', 'imposto']
+
+const tipoLabels: Record<string, string> = {
+  receita: 'Produto contratado / receita',
+  receita_emissao: 'Receita de emissao',
+  fee_mensal: 'Produto contratado',
+  fee_emissao: 'Receita de emissao',
+  despesa: 'Despesa',
+  compra_milhas: 'Compra de Milhas',
+  imposto: 'Imposto de renda',
+}
+
+function isoDate(d: Date | null) {
+  return d ? d.toISOString().slice(0, 10) : null
+}
+
 export default async function FinanceiroPage({ searchParams }: Props) {
   const session = await auth()
   const gestorId = session!.user.id
@@ -23,10 +40,12 @@ export default async function FinanceiroPage({ searchParams }: Props) {
   const intervalo = intervaloPeriodo(periodo)
   const labelPeriodo = periodo.mes === 0 ? `Ano ${periodo.ano}` : `${nomesMeses[periodo.mes - 1]}/${periodo.ano}`
 
-  const [transacoes, clientes, meta] = await Promise.all([
+  const [pontuais, recorrentes, meta, clientes] = await Promise.all([
+    // Transacoes pontuais (nao fixas) do periodo
     prisma.transacao.findMany({
       where: {
         gestorId,
+        recorrente: false,
         OR: [
           { dataPagamento: { gte: intervalo.gte, lt: intervalo.lt } },
           { pago: false, createdAt: { gte: intervalo.gte, lt: intervalo.lt } },
@@ -35,32 +54,39 @@ export default async function FinanceiroPage({ searchParams }: Props) {
       include: { cliente: { select: { nome: true } } },
       orderBy: { createdAt: 'desc' },
     }),
-    prisma.cliente.findMany({
-      where: { gestorId, ativo: true },
-      select: { id: true, nome: true },
-      orderBy: { nome: 'asc' },
+    // Despesas/receitas fixas ativas no periodo (comecaram antes do fim do mes e nao terminaram antes do inicio)
+    prisma.transacao.findMany({
+      where: {
+        gestorId,
+        recorrente: true,
+        createdAt: { lt: intervalo.lt },
+        OR: [{ recorrenteAte: null }, { recorrenteAte: { gte: intervalo.gte } }],
+      },
+      include: { cliente: { select: { nome: true } } },
+      orderBy: { createdAt: 'desc' },
     }),
     getMetaPeriodo(gestorId, periodo),
+    prisma.cliente.findMany({ where: { gestorId, ativo: true }, select: { id: true, nome: true }, orderBy: { nome: 'asc' } }),
   ])
 
-  const receitaTipos = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
-  const receitas = transacoes.filter(t => receitaTipos.includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
-  const despesas = transacoes.filter(t => ['despesa', 'compra_milhas', 'imposto'].includes(t.tipo) && t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
-  const pendentesReceber = transacoes.filter(t => receitaTipos.includes(t.tipo) && !t.pago).reduce((acc, t) => acc + toNum(t.valor), 0)
+  // Receitas: pontuais pagas + recorrentes de receita (sempre contam no mes ativo)
+  const receitasPontuais = pontuais.filter(t => receitaTipos.includes(t.tipo) && t.pago).reduce((a, t) => a + toNum(t.valor), 0)
+  const receitasFixas = recorrentes.filter(t => receitaTipos.includes(t.tipo)).reduce((a, t) => a + toNum(t.valor), 0)
+  const receitas = receitasPontuais + receitasFixas
+
+  // Despesas: pontuais pagas + todas as fixas ativas (custo mensal comprometido)
+  const despesasPontuais = pontuais.filter(t => despesaTipos.includes(t.tipo) && t.pago).reduce((a, t) => a + toNum(t.valor), 0)
+  const despesasFixas = recorrentes.filter(t => despesaTipos.includes(t.tipo)).reduce((a, t) => a + toNum(t.valor), 0)
+  const despesas = despesasPontuais + despesasFixas
+
+  const pendentesReceber = pontuais.filter(t => receitaTipos.includes(t.tipo) && !t.pago).reduce((a, t) => a + toNum(t.valor), 0)
   const lucroLiquido = receitas - despesas
   const imposto = receitas * 0.15
   const values = [receitas, despesas, lucroLiquido, meta]
   const progressoMeta = meta > 0 ? Math.min((receitas / meta) * 100, 100) : 0
 
-  const tipoLabels: Record<string, string> = {
-    receita: 'Produto contratado / receita',
-    receita_emissao: 'Receita de emissao',
-    fee_mensal: 'Produto contratado',
-    fee_emissao: 'Receita de emissao',
-    despesa: 'Despesa',
-    compra_milhas: 'Compra de Milhas',
-    imposto: 'Imposto de renda',
-  }
+  // Lista: fixas primeiro, depois pontuais
+  const lista = [...recorrentes, ...pontuais]
 
   return (
     <div className="space-y-6">
@@ -68,7 +94,7 @@ export default async function FinanceiroPage({ searchParams }: Props) {
         <div>
           <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 5</p>
           <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Financeiro da empresa</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Receitas recebidas, despesas, a receber, imposto e meta — filtrados por {labelPeriodo}.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Receitas, despesas (incl. fixas mensais), a receber, imposto e meta — {labelPeriodo}.</p>
         </div>
         <div className="flex flex-col items-end gap-3">
           <PeriodoFilter mes={periodo.mes} ano={periodo.ano} />
@@ -112,6 +138,10 @@ export default async function FinanceiroPage({ searchParams }: Props) {
               )}
             </div>
             <div className="rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-3">
+              <p className="text-sm text-[#e8d3ab]/75">Despesas fixas no mes</p>
+              <p className="text-xl font-semibold text-[#f4d59a]">{formatCurrency(despesasFixas)}</p>
+            </div>
+            <div className="rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-3">
               <p className="text-sm text-[#e8d3ab]/75">A receber</p>
               <p className="text-xl font-semibold text-[#f4d59a]">{formatCurrency(pendentesReceber)}</p>
             </div>
@@ -128,19 +158,36 @@ export default async function FinanceiroPage({ searchParams }: Props) {
             <CardTitle>Transacoes de {labelPeriodo}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {transacoes.length > 0 ? transacoes.map((t) => {
+            {lista.length > 0 ? lista.map((t) => {
               const isReceita = receitaTipos.includes(t.tipo)
               return (
                 <div key={t.id} className="grid gap-3 rounded-md border border-[#d7ad68]/25 bg-white/65 p-3 md:grid-cols-[1fr_auto_auto_auto] md:items-center">
                   <div>
-                    <p className="font-medium">{t.descricao}</p>
+                    <p className="font-medium">
+                      {t.descricao}
+                      {t.recorrente && <Badge className="ml-2 bg-blue-100 text-blue-800">Fixa mensal</Badge>}
+                    </p>
                     <p className="text-xs text-muted-foreground">{t.cliente?.nome || 'Empresa'} - {tipoLabels[t.tipo] || t.tipo}</p>
                   </div>
-                  <Badge className={t.pago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>{t.pago ? 'Pago' : 'Pendente'}</Badge>
+                  {t.recorrente ? (
+                    <Badge className="bg-blue-100 text-blue-800">Mensal</Badge>
+                  ) : (
+                    <Badge className={t.pago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>{t.pago ? 'Pago' : 'Pendente'}</Badge>
+                  )}
                   <p className={isReceita ? 'font-semibold text-emerald-700' : 'font-semibold text-red-700'}>
                     {isReceita ? '+' : '-'}{formatCurrency(toNum(t.valor))}
                   </p>
-                  <TransacaoActions id={t.id} pago={t.pago} temCliente={!!t.clienteId} />
+                  <TransacaoActions transacao={{
+                    id: t.id,
+                    tipo: t.tipo,
+                    descricao: t.descricao,
+                    valor: toNum(t.valor),
+                    pago: t.pago,
+                    recorrente: t.recorrente,
+                    recorrenteAte: isoDate(t.recorrenteAte),
+                    dataVencimento: isoDate(t.dataVencimento),
+                    temCliente: !!t.clienteId,
+                  }} />
                 </div>
               )
             }) : (

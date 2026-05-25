@@ -6,9 +6,12 @@ export async function POST(request: NextRequest) {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { tipo, descricao, valor, clienteId, dataVencimento, pago } = await request.json()
+  const { tipo, descricao, valor, clienteId, dataVencimento, pago, recorrente, recorrenteAte } = await request.json()
 
   if (!descricao || !valor) return NextResponse.json({ error: 'Campos obrigatórios faltando.' }, { status: 400 })
+
+  const ehRecorrente = recorrente === 'true' || recorrente === true
+  const estaPago = pago === 'true' || pago === true
 
   const transacao = await prisma.transacao.create({
     data: {
@@ -18,8 +21,10 @@ export async function POST(request: NextRequest) {
       valor: parseFloat(valor),
       clienteId: clienteId || null,
       dataVencimento: dataVencimento ? new Date(dataVencimento) : null,
-      pago: pago === 'true' || pago === true,
-      dataPagamento: pago === 'true' || pago === true ? new Date() : null,
+      pago: estaPago,
+      dataPagamento: estaPago ? new Date() : null,
+      recorrente: ehRecorrente,
+      recorrenteAte: ehRecorrente && recorrenteAte ? new Date(recorrenteAte) : null,
     },
   })
 
@@ -68,6 +73,23 @@ export async function PATCH(request: NextRequest) {
       data: { pago: false, dataPagamento: null },
     })
     return NextResponse.json({ id: transacao.id, pago: false })
+  }
+
+  if (action === 'editar') {
+    const { tipo, descricao, valor, dataVencimento, recorrente, recorrenteAte } = body
+    const ehRecorrente = recorrente === 'true' || recorrente === true
+    const transacao = await prisma.transacao.update({
+      where: { id },
+      data: {
+        ...(tipo !== undefined ? { tipo } : {}),
+        ...(descricao !== undefined ? { descricao: String(descricao) } : {}),
+        ...(valor !== undefined && valor !== '' ? { valor: parseFloat(valor) || 0 } : {}),
+        ...(dataVencimento !== undefined ? { dataVencimento: dataVencimento ? new Date(dataVencimento) : null } : {}),
+        ...(recorrente !== undefined ? { recorrente: ehRecorrente } : {}),
+        ...(recorrente !== undefined ? { recorrenteAte: ehRecorrente && recorrenteAte ? new Date(recorrenteAte) : null } : {}),
+      },
+    })
+    return NextResponse.json({ id: transacao.id })
   }
 
   return NextResponse.json({ error: 'Acao invalida.' }, { status: 400 })

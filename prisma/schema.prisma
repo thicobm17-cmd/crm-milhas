@@ -258,6 +258,8 @@ model Transacao {
   dataVencimento DateTime? @map("data_vencimento")
   dataPagamento  DateTime? @map("data_pagamento")
   pago           Boolean   @default(false)
+  recorrente     Boolean   @default(false)
+  recorrenteAte  DateTime? @map("recorrente_ate")
   createdAt      DateTime  @default(now()) @map("created_at")
 
   gestor  Gestor   @relation(fields: [gestorId], references: [id], onDelete: Cascade)
