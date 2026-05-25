@@ -1,0 +1,40 @@
+name: Backup diario do banco
+
+# Roda todo dia as 06:00 UTC (03:00 horario de Brasilia) e tambem pode ser
+# disparado manualmente em Actions -> Backup diario do banco -> Run workflow.
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Gerar dump do PostgreSQL
+        env:
+          # Segredo configurado em Settings -> Secrets and variables -> Actions
+          DATABASE_URL: ${{ secrets.DATABASE_URL_BACKUP }}
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "ERRO: secret DATABASE_URL_BACKUP nao configurado."
+            exit 1
+          fi
+          mkdir -p backups
+          STAMP=$(date +%Y-%m-%d_%H-%M)
+          echo "Gerando backup crm-milhas-$STAMP.dump ..."
+          # Usa pg_dump 17 via Docker para casar com a versao do servidor Railway.
+          # Formato custom (-Fc): compactado e restauravel com pg_restore.
+          docker run --rm postgres:17-alpine \
+            pg_dump "$DATABASE_URL" --no-owner --no-privileges -Fc \
+            > "backups/crm-milhas-$STAMP.dump"
+          echo "Tamanho do backup:"
+          ls -lh backups
+
+      - name: Salvar backup como artifact (retencao 90 dias)
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: backups/*.dump
+          retention-days: 90
+          if-no-files-found: error
