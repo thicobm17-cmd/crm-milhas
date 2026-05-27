@@ -25,10 +25,10 @@ export default async function MetasPage() {
   const clientesAcima100 = clientes.filter(c => c.economiaTotal >= c.metaEconomia).length
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 8</p>
-        <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Metas</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Metas</h1>
         <p className="mt-1 text-sm text-muted-foreground">A meta da empresa e de <strong>faturamento</strong>. Para cada cliente, o compromisso e economizar pelo menos o valor que ele investiu.</p>
       </div>
 
@@ -37,7 +37,7 @@ export default async function MetasPage() {
           <CardTitle className="text-[#f4d59a]">Meta de faturamento do mes</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <p className="max-w-md text-sm text-[#e8d3ab]/75">A meta de faturamento de {labelMes} alimenta o painel, o grafico e a barra de progresso do Financeiro.</p>
             <div className="w-full md:max-w-xs">
               <MetaForm mes={periodo.mes} ano={periodo.ano} valorAtual={metaMes} label={labelMes} />
@@ -51,24 +51,24 @@ export default async function MetasPage() {
         <p className="text-sm text-muted-foreground">Quanto ja economizamos para cada cliente versus o valor que ele investiu na assessoria.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <Card className="atlas-panel">
-          <CardContent className="p-5">
-            <Target size={18} className="mb-3 text-[#8f7040]" />
+          <CardContent className="p-3">
+            <Target size={18} className="mb-2 text-[#8f7040]" />
             <p className="text-sm text-muted-foreground">Total investido pelos clientes</p>
             <p className="mt-2 text-2xl font-semibold text-[#0b3b31]">{formatCurrency(totalMeta)}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
-          <CardContent className="p-5">
-            <Trophy size={18} className="mb-3 text-[#8f7040]" />
+          <CardContent className="p-3">
+            <Trophy size={18} className="mb-2 text-[#8f7040]" />
             <p className="text-sm text-muted-foreground">Economia ja entregue</p>
             <p className="mt-2 text-2xl font-semibold text-emerald-700">{formatCurrency(totalEconomia)}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
-          <CardContent className="p-5">
-            <CalendarDays size={18} className="mb-3 text-[#8f7040]" />
+          <CardContent className="p-3">
+            <CalendarDays size={18} className="mb-2 text-[#8f7040]" />
             <p className="text-sm text-muted-foreground">Clientes que recuperaram o investido</p>
             <p className="mt-2 text-2xl font-semibold text-[#0b3b31]">{clientesAcima100} / {clientes.length}</p>
           </CardContent>
@@ -79,13 +79,13 @@ export default async function MetasPage() {
         <CardHeader>
           <CardTitle>Economia entregue por cliente</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-3">
           {clientes.length > 0 ? clientes.map(c => {
             const progresso = Math.min((c.economiaTotal / c.metaEconomia) * 100, 100)
             const atingiu = c.economiaTotal >= c.metaEconomia
 
             return (
-              <div key={c.id} className="space-y-2 rounded-md border border-[#d7ad68]/25 bg-white/65 p-4">
+              <div key={c.id} className="space-y-2 rounded-md border border-[#d7ad68]/25 bg-white/65 p-3">
                 <div className="flex items-center justify-between gap-3">
                   <Link href={`/clientes/${c.id}`} className="font-medium text-[#0b3b31] hover:underline">{c.nome}</Link>
                   {atingiu && <Badge className="bg-emerald-100 text-emerald-800">Investimento recuperado</Badge>}
@@ -99,7 +99,7 @@ export default async function MetasPage() {
               </div>
             )
           }) : (
-            <p className="py-10 text-center text-sm text-muted-foreground">Nenhum cliente com meta definida ainda.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">Nenhum cliente com meta definida ainda.</p>
           )}
         </CardContent>
       </Card>

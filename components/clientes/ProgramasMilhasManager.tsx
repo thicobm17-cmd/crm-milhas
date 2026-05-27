@@ -298,19 +298,19 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
   }
 
   return (
-    <div className="space-y-5">
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+    <div className="space-y-4">
+      <div className="grid gap-3 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="atlas-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><Landmark size={18} /> Programas, contas e custo medio</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2.5">
             {contas.length === 0 ? (
               <p className="rounded-md border border-dashed border-[#d7ad68]/40 bg-white/55 p-4 text-sm text-muted-foreground">
                 Nenhum programa cadastrado ainda. Adicione o programa, numero da conta e saldo inicial do cliente.
               </p>
             ) : contas.map((conta) => (
-              <div key={conta.id} className="rounded-lg border border-[#d7ad68]/25 bg-white/75 p-4">
+              <div key={conta.id} className="rounded-lg border border-[#d7ad68]/25 bg-white/75 p-3">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="flex items-start gap-3">
                     <span className="mt-1 size-3 rounded-full" style={{ backgroundColor: conta.programa.cor }} />
@@ -332,23 +332,23 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                   </div>
                 </div>
 
-                <div className="mt-4 grid gap-3 md:grid-cols-3">
-                  <div className="rounded-md bg-[#0b3b31] p-3 text-[#f8e7c4]">
+                <div className="mt-3 grid gap-2.5 md:grid-cols-3">
+                  <div className="rounded-md bg-[#0b3b31] p-2.5 text-[#f8e7c4]">
                     <p className="text-xs text-[#d7ad68]">Ultima atualizacao</p>
                     <p className="mt-1 text-sm font-semibold">{formatDate(conta.ultimaAtualizacaoSaldo)}</p>
                   </div>
-                  <div className="rounded-md bg-white p-3">
+                  <div className="rounded-md bg-white p-2.5">
                     <p className="text-xs text-muted-foreground">Custo mensal do clube</p>
                     <p className="mt-1 text-sm font-semibold">{conta.custoMensal ? formatCurrency(conta.custoMensal) : 'Nao informado'}</p>
                   </div>
-                  <div className="rounded-md bg-white p-3">
+                  <div className="rounded-md bg-white p-2.5">
                     <p className="text-xs text-muted-foreground">Lancamentos registrados</p>
                     <p className="mt-1 text-sm font-semibold">{conta.movimentacoes.length}</p>
                   </div>
                 </div>
 
                 {conta.movimentacoes.length > 0 && (
-                  <div className="mt-4 space-y-2">
+                  <div className="mt-3 space-y-2">
                     <p className="text-xs font-semibold uppercase text-[#8f7040]">Ultimos lancamentos</p>
                     {conta.movimentacoes.slice(0, 3).map((mov) => (
                       <div key={mov.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-[#fbf4e8] p-2 text-xs">
@@ -359,7 +359,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                   </div>
                 )}
 
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   <Button size="sm" className="bg-[#0b3b31] text-[#f4d59a]" onClick={() => setContaMov(conta)}><Plus size={14} /> Adicionar milhas</Button>
                   <Button size="sm" variant="outline" onClick={() => marcarVisualizado(conta.id)}><Eye size={14} /> Marcar visto hoje</Button>
                   <Button size="sm" variant="outline" onClick={() => abrirEdicao(conta)}><Pencil size={14} /> Editar conta</Button>
@@ -370,12 +370,12 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Card className="atlas-panel">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Calculator size={18} /> Calculadora de fatura</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2.5">
               <div className="space-y-2">
                 <Label>Cartao utilizado</Label>
                 <Select value={calc.cartaoId} onValueChange={v => setCalc(prev => ({ ...prev, cartaoId: v ?? '' }))}>
@@ -409,7 +409,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                 <Label>Custo para gerar esses pontos (opcional)</Label>
                 <Input type="number" step="0.01" value={calc.custoTotal} onChange={e => setCalc(prev => ({ ...prev, custoTotal: e.target.value }))} placeholder="0,00" />
               </div>
-              <div className="rounded-md bg-[#0b3b31] p-4 text-[#f8e7c4]">
+              <div className="rounded-md bg-[#0b3b31] p-3 text-[#f8e7c4]">
                 <p className="text-xs text-[#d7ad68]">Resultado exato pela fatura</p>
                 <p className="mt-1 text-2xl font-semibold">{brNumber(pontosCalculados)} pontos</p>
                 <p className="text-xs text-[#f8e7c4]/70">Formula: fatura / cotacao do dolar x pontos por dolar do cartao.</p>
@@ -424,11 +424,11 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><CreditCard size={18} /> Cartoes do cliente</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2.5">
               {cartoes.map((cartao) => {
                 const restantes = Math.max(0, cartao.salasVipTotal - cartao.salasVipUsadas)
                 return (
-                  <div key={cartao.id} className="rounded-md border border-[#d7ad68]/25 bg-white/75 p-3">
+                  <div key={cartao.id} className="rounded-md border border-[#d7ad68]/25 bg-white/75 p-2.5">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-medium text-[#11231f]">{cartao.nome}</p>

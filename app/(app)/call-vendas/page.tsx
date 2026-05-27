@@ -61,20 +61,20 @@ export default async function CallVendasPage() {
     : atlasProducts.map((nome, index) => ({ id: `padrao-${index}`, nome, preco: 0 }))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 2</p>
-        <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Call de vendas</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Call de vendas</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Roteiro operacional da call: origem, respostas, produto escolhido, pagamento e conversao automatica.
         </p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-4">
+      <div className="grid gap-3 lg:grid-cols-4">
         {callSteps.map((step, index) => (
           <Card key={step} className="atlas-panel transition hover:-translate-y-1 hover:shadow-md">
-            <CardContent className="p-4">
-              <div className="mb-3 flex size-8 items-center justify-center rounded-full bg-[#0b3b31] text-sm font-semibold text-[#f4d59a]">{index + 1}</div>
+            <CardContent className="flex items-center gap-3 p-3">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#0b3b31] text-sm font-semibold text-[#f4d59a]">{index + 1}</div>
               <p className="text-sm font-medium">{step}</p>
             </CardContent>
           </Card>

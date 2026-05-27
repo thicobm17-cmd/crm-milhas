@@ -30,8 +30,8 @@ export function DashboardCharts({ clientes }: Props) {
   return (
     <>
       {top5.length > 0 ? (
-        <ResponsiveContainer width="100%" height={280}>
-          <BarChart data={top5} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+        <ResponsiveContainer width="100%" height={240}>
+          <BarChart data={top5} margin={{ top: 5, right: 10, left: 2, bottom: 0 }}>
             <XAxis dataKey="nome" tick={{ fontSize: 12 }} />
             <YAxis tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />
             <Tooltip
@@ -46,7 +46,7 @@ export function DashboardCharts({ clientes }: Props) {
           </BarChart>
         </ResponsiveContainer>
       ) : (
-        <div className="flex h-[280px] items-center justify-center">
+        <div className="flex h-[220px] items-center justify-center">
           <p className="text-sm text-muted-foreground">Nenhum dado ainda. Comece registrando produtos de viagem.</p>
         </div>
       )}

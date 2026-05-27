@@ -80,10 +80,10 @@ export function CatalogoProdutos() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="space-y-2">
         {produtos.map(p => (
-          <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+          <div key={p.id} className="flex flex-wrap items-center gap-3 rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
             <div className="min-w-[180px] flex-1">
               <p className="font-medium text-[#11231f]">{p.nome}</p>
               <p className="text-xs text-muted-foreground">Preco atual: {formatBRL(p.preco)}</p>
@@ -108,7 +108,7 @@ export function CatalogoProdutos() {
         ))}
       </div>
 
-      <form onSubmit={adicionar} className="rounded-md border border-dashed border-[#d7ad68]/40 bg-white/50 p-3">
+      <form onSubmit={adicionar} className="rounded-md border border-dashed border-[#d7ad68]/40 bg-white/50 p-2.5">
         <p className="mb-2 text-sm font-medium text-[#0b3b31]">Adicionar novo produto</p>
         <div className="flex flex-wrap items-end gap-2">
           <div className="flex-1 space-y-1">

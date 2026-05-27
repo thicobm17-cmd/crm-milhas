@@ -64,7 +64,7 @@ export function GestoresFila({ pendentes, equipe, meId, souCEO }: Props) {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <div>
         <p className="mb-2 flex items-center gap-2 text-sm font-medium text-[#f8e7c4]">
           <UserCheck size={15} /> Fila de solicitacoes {pendentes.length > 0 && <Badge className="bg-amber-400 text-amber-950">{pendentes.length}</Badge>}
@@ -74,7 +74,7 @@ export function GestoresFila({ pendentes, equipe, meId, souCEO }: Props) {
         ) : (
           <div className="space-y-2">
             {pendentes.map(g => (
-              <div key={g.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-3">
+              <div key={g.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-2.5">
                 <div>
                   <p className="text-sm font-medium text-[#f8e7c4]">{g.nome}</p>
                   <p className="text-xs text-[#e8d3ab]/65">{g.email}</p>
@@ -100,7 +100,7 @@ export function GestoresFila({ pendentes, equipe, meId, souCEO }: Props) {
         <p className="mb-2 text-sm font-medium text-[#f8e7c4]">Equipe ativa</p>
         <div className="space-y-2">
           {equipe.map(g => (
-            <div key={g.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-3">
+            <div key={g.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-[#d7ad68]/20 bg-[#0f2d27]/70 p-2.5">
               <div>
                 <p className="text-sm font-medium text-[#f8e7c4]">{g.nome} {g.id === meId && <span className="text-xs text-[#d7ad68]">(voce)</span>}</p>
                 <p className="text-xs text-[#e8d3ab]/65">{g.email}</p>

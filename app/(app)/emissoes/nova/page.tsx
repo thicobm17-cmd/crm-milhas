@@ -83,14 +83,14 @@ function NovaEmissaoForm() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-3">
         <Link href="/emissoes"><Button variant="ghost" size="sm"><ArrowLeft size={16} className="mr-1" /> Emissões</Button></Link>
         <h1 className="text-2xl font-bold text-slate-900">Nova Emissão</h1>
       </div>
 
       {economia > 0 && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3">
           <TrendingUp className="text-green-600" size={20} />
           <div>
             <p className="text-sm font-semibold text-green-700">Economia para o cliente</p>
@@ -99,11 +99,11 @@ function NovaEmissaoForm() {
         </div>
       )}
 
-      <Card className="border-0 shadow-sm">
+      <Card className="atlas-panel">
         <CardHeader><CardTitle className="text-base">Dados da emissão</CardTitle></CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className="md:col-span-2 space-y-2">
                 <Label>Cliente *</Label>
                 <Select value={form.clienteId} onValueChange={v => update('clienteId', v ?? '')}>
@@ -177,9 +177,9 @@ function NovaEmissaoForm() {
               </div>
             </div>
 
-            <div className="border-t pt-5">
-              <h3 className="font-medium text-slate-700 mb-4">Valores (base para calcular economia)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border-t pt-4">
+              <h3 className="mb-3 font-medium text-slate-700">Valores (base para calcular economia)</h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Preço de mercado (R$) *</Label>
                   <Input type="number" step="0.01" placeholder="5000,00" value={form.precoMercado} onChange={e => update('precoMercado', e.target.value)} />

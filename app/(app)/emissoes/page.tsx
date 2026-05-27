@@ -22,7 +22,7 @@ export default async function EmissoesPage() {
   const totalEconomia = confirmadas.reduce((acc, e) => acc + calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado), 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Emissões</h1>
@@ -33,16 +33,16 @@ export default async function EmissoesPage() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 text-center">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <Card className="atlas-panel">
+          <CardContent className="p-4 text-center">
             <TrendingUp className="text-green-500 mx-auto mb-2" size={22} />
             <p className="text-xs text-slate-500">Economia Total</p>
             <p className="text-xl font-bold text-green-600">{formatCurrency(totalEconomia)}</p>
           </CardContent>
         </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 text-center">
+        <Card className="atlas-panel">
+          <CardContent className="p-4 text-center">
             <p className="text-xs text-slate-500 mb-1">Emissões Confirmadas</p>
             <p className="text-xl font-bold">{confirmadas.length}</p>
             <p className="text-xs text-slate-400">de {emissoes.length} total</p>
@@ -50,7 +50,7 @@ export default async function EmissoesPage() {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-sm">
+      <Card className="atlas-panel">
         <CardHeader><CardTitle className="text-base">Histórico de Emissões</CardTitle></CardHeader>
         <CardContent className="p-0">
           {emissoes.length > 0 ? (
@@ -58,7 +58,7 @@ export default async function EmissoesPage() {
               {emissoes.map(e => {
                 const eco = calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado)
                 return (
-                  <div key={e.id} className="p-4 flex items-center justify-between hover:bg-slate-50">
+                  <div key={e.id} className="flex items-center justify-between p-3 hover:bg-white/60">
                     <div className="flex items-center gap-4">
                       <div className="w-1.5 h-12 rounded-full flex-shrink-0" style={{ backgroundColor: e.programa?.cor ?? '#6b7280' }} />
                       <div>
@@ -81,7 +81,7 @@ export default async function EmissoesPage() {
               })}
             </div>
           ) : (
-            <div className="py-16 text-center text-slate-400">
+            <div className="py-10 text-center text-slate-400">
               <p>Nenhuma emissão registrada.</p>
               <Link href="/emissoes/nova" className="mt-3 inline-block">
                 <Button size="sm" variant="outline">Registrar primeira emissão</Button>

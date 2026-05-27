@@ -144,13 +144,13 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-      <div className="space-y-5">
+    <form onSubmit={handleSubmit} className="grid gap-4 xl:grid-cols-[minmax(0,1.15fr)_minmax(340px,0.85fr)]">
+      <div className="space-y-4">
         <Card className="atlas-panel">
           <CardHeader>
             <CardTitle>Origem do cliente</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4 md:grid-cols-2">
+          <CardContent className="grid gap-3 md:grid-cols-2">
             <div className="space-y-2">
               <Label>Origem</Label>
               <Select value={origin} onValueChange={(value) => setOrigin(value ?? 'FUNIL')}>
@@ -187,20 +187,20 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
               <CardTitle>{selectedLead.nome}</CardTitle>
               <p className="text-sm text-muted-foreground">{selectedLead.whatsapp} - {formatDateTime(selectedLead.callMarcadaPara)}</p>
             </CardHeader>
-            <CardContent className="grid gap-3 md:grid-cols-2">
-              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+            <CardContent className="grid gap-2.5 md:grid-cols-2">
+              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">Contato</p>
                 <p className="mt-2 text-sm font-medium">E-mail</p>
                 <p className="mt-1 text-sm text-muted-foreground">{selectedLead.email || 'Sem email'}</p>
               </div>
-              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+              <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">Perfil financeiro</p>
                 <p className="mt-2 text-sm font-medium">Gasto/movimentacao mensal</p>
                 <p className="mt-1 text-sm text-muted-foreground">{selectedLead.gastoMensal || 'Nao informado'}</p>
               </div>
               {selectedLead.respostas.length === 0 && <p className="text-sm text-muted-foreground">Esse lead ainda nao tem respostas salvas.</p>}
               {selectedLead.respostas.map((answer) => (
-                <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+                <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">{answer.bloco}</p>
                   <p className="mt-2 text-sm font-medium">{answer.pergunta}</p>
                   <p className="mt-1 text-sm text-muted-foreground">{answer.resposta || 'Sem resposta'}</p>
@@ -215,8 +215,8 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
             <CardHeader>
               <CardTitle>Questionario manual durante a call</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid gap-4 md:grid-cols-3">
+            <CardContent className="space-y-4">
+              <div className="grid gap-3 md:grid-cols-4">
                 <div className="space-y-2">
                   <Label>Nome completo</Label>
                   <Input value={manualLead.nome} onChange={(event) => updateManual('nome', event.target.value)} />
@@ -241,9 +241,9 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
               </div>
 
               {questionnaireBlocks.map((block) => (
-                <div key={block.title} className="rounded-md border border-[#d7ad68]/25 bg-white/55 p-4">
+                <div key={block.title} className="rounded-md border border-[#d7ad68]/25 bg-white/55 p-3">
                   <h3 className="font-semibold text-[#0b3b31]">{block.title}</h3>
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="mt-3 grid gap-3 md:grid-cols-2">
                     {block.questions.map((question) => (
                       <div key={question} className="space-y-2">
                         <Label>{question}</Label>
@@ -261,14 +261,14 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
         )}
       </div>
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <Card className="atlas-dark-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[#f4d59a]"><Presentation size={18} /> Apresentacoes Canva</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2.5">
             {canvaLinks.map((item) => (
-              <a key={item.product} href={item.url} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-md border border-[#d7ad68]/25 bg-[#0f2d27]/65 p-3 text-sm text-[#f8e7c4] hover:bg-[#153d35]">
+              <a key={item.product} href={item.url} target="_blank" rel="noreferrer" className="flex items-center justify-between rounded-md border border-[#d7ad68]/25 bg-[#0f2d27]/65 p-2.5 text-sm text-[#f8e7c4] hover:bg-[#153d35]">
                 {item.product}
                 <ExternalLink size={14} />
               </a>
@@ -291,10 +291,10 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
           <CardHeader>
             <CardTitle>Desfecho da call</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3">
             <div className="space-y-2">
               <Label>Participantes da call</Label>
-              <div className="grid gap-2">
+              <div className="grid gap-1.5 sm:grid-cols-2 xl:grid-cols-1">
                 {gestores.map((gestor) => (
                   <label key={gestor.id} className="flex items-center gap-2 rounded-md border border-[#d7ad68]/25 bg-white/60 p-2 text-sm">
                     <input
@@ -334,7 +334,7 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5">
               <div className="space-y-2">
                 <Label>Valor do produto</Label>
                 <Select value={form.valorModo} onValueChange={(value) => selecionarValor(value ?? 'outro')}>

@@ -20,7 +20,7 @@ export function FinanceLineChart({ dados, ano }: Props) {
 
   if (!temDados) {
     return (
-      <div className="flex h-[300px] items-center justify-center text-center">
+      <div className="flex h-[240px] items-center justify-center text-center">
         <p className="text-sm text-muted-foreground">
           Sem movimento financeiro em {ano}. Registre receitas, despesas e metas para ver o grafico.
         </p>
@@ -29,8 +29,8 @@ export function FinanceLineChart({ dados, ano }: Props) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={320}>
-      <LineChart data={dados} margin={{ top: 10, right: 20, left: 10, bottom: 5 }}>
+    <ResponsiveContainer width="100%" height={260}>
+      <LineChart data={dados} margin={{ top: 8, right: 16, left: 4, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7dcc4" />
         <XAxis dataKey="mes" tick={{ fontSize: 12 }} />
         <YAxis tickFormatter={v => `R$${(v / 1000).toFixed(0)}k`} tick={{ fontSize: 11 }} />

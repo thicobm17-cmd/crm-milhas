@@ -15,11 +15,11 @@ export default async function ClientesPage() {
   const clientes = await getClientesComResumo(session!.user.id)
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 6</p>
-          <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Clientes</h1>
+          <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Clientes</h1>
           <p className="mt-1 text-sm text-muted-foreground">Carteira de clientes, metas de economia, programas, cartoes e produtos contratados.</p>
         </div>
         <Link href="/clientes/novo">
@@ -30,7 +30,7 @@ export default async function ClientesPage() {
         </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="grid gap-3 xl:grid-cols-[0.7fr_1.3fr]">
         <Card className="atlas-dark-panel">
           <CardHeader>
             <CardTitle className="text-[#f4d59a]">Programas de milhas suportados</CardTitle>
@@ -46,9 +46,9 @@ export default async function ClientesPage() {
           <CardHeader>
             <CardTitle>Controle de produtos contratados</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-3 md:grid-cols-4">
+          <CardContent className="grid gap-2 md:grid-cols-4">
             {clientProductTypes.map(({ title, icon: Icon }) => (
-              <div key={title} className="rounded-md border border-[#d7ad68]/25 bg-white/65 p-3">
+              <div key={title} className="rounded-md border border-[#d7ad68]/25 bg-white/65 p-2.5">
                 <Icon className="mb-2 text-[#8f7040]" size={18} />
                 <p className="font-medium text-[#0b3b31]">{title}</p>
                 <p className="text-xs text-muted-foreground">Economia soma no cliente</p>
@@ -59,7 +59,7 @@ export default async function ClientesPage() {
       </div>
 
       {clientes.length > 0 ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {clientes.map(c => {
             const progresso = c.metaEconomia > 0 ? Math.min((c.economiaTotal / c.metaEconomia) * 100, 100) : 0
             const initials = c.nome.split(' ').slice(0, 2).map(part => part[0]).join('').toUpperCase()
@@ -67,7 +67,7 @@ export default async function ClientesPage() {
             return (
               <Link key={c.id} href={`/clientes/${c.id}`}>
                 <Card className="atlas-panel h-full transition-transform hover:-translate-y-0.5">
-                  <CardContent className="space-y-4 p-5">
+                  <CardContent className="space-y-3 p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <Avatar className="size-12 border border-[#d7ad68]/35">
@@ -84,12 +84,12 @@ export default async function ClientesPage() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="rounded-md bg-[#0b3b31] p-3 text-[#f8e7c4]">
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <div className="rounded-md bg-[#0b3b31] p-2.5 text-[#f8e7c4]">
                         <p className="text-xs text-[#d7ad68]">Economia vitalicia</p>
                         <p className="mt-1 font-semibold">{formatCurrency(c.economiaTotal)}</p>
                       </div>
-                      <div className="rounded-md bg-white/65 p-3">
+                      <div className="rounded-md bg-white/65 p-2.5">
                         <p className="text-xs text-muted-foreground">Produtos emitidos</p>
                         <p className="mt-1 font-semibold text-[#0b3b31]">{c.totalEmissoes}</p>
                       </div>

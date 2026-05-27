@@ -87,22 +87,22 @@ export default function NovoClientePage() {
   }
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-5xl space-y-4">
       <div className="flex items-center gap-3">
         <Link href="/clientes">
           <Button variant="ghost" size="sm"><ArrowLeft size={16} /> Voltar</Button>
         </Link>
         <div>
           <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Cliente Atlas</p>
-          <h1 className="text-3xl font-semibold text-[#11231f]">Novo cliente</h1>
+          <h1 className="text-2xl font-semibold text-[#11231f]">Novo cliente</h1>
         </div>
       </div>
 
       <Card className="atlas-panel">
         <CardHeader><CardTitle>Dados do cliente e produto</CardTitle></CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className="space-y-2 md:col-span-2">
                 <Label>Nome completo</Label>
                 <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />
@@ -125,9 +125,9 @@ export default function NovoClientePage() {
               </div>
             </div>
 
-            <div className="border-t border-[#d7ad68]/25 pt-5">
-              <h3 className="mb-4 font-medium text-[#0b3b31]">Produto escolhido</h3>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="border-t border-[#d7ad68]/25 pt-4">
+              <h3 className="mb-3 font-medium text-[#0b3b31]">Produto escolhido</h3>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <div className="space-y-2">
                   <Label>Produto contratado</Label>
                   <Select value={form.produtoContratado} onValueChange={v => selecionarProduto(v ?? '')}>
@@ -183,7 +183,7 @@ export default function NovoClientePage() {
 
             {error && <p className="rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-600">{error}</p>}
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex gap-3 pt-1">
               <Button type="submit" disabled={loading} className="bg-[#0b3b31] text-[#f4d59a] hover:bg-[#12483d]">
                 {loading ? 'Salvando...' : 'Salvar cliente'}
               </Button>

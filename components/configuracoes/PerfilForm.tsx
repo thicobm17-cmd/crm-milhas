@@ -34,7 +34,7 @@ export function PerfilForm({ gestor }: Props) {
   }
 
   return (
-    <form onSubmit={handleSave} className="space-y-4">
+    <form onSubmit={handleSave} className="grid gap-3 md:grid-cols-2">
       <div className="space-y-2">
         <Label>Email</Label>
         <Input value={gestor?.email ?? ''} disabled className="bg-slate-50" />
@@ -48,7 +48,7 @@ export function PerfilForm({ gestor }: Props) {
         <Label>Telefone / WhatsApp</Label>
         <Input value={telefone} onChange={e => setTelefone(e.target.value)} placeholder="(11) 99999-9999" />
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 md:col-span-2">
         <Button type="submit" disabled={loading}>{loading ? 'Salvando...' : 'Salvar alterações'}</Button>
         {success && <span className="text-sm text-green-600">Salvo com sucesso!</span>}
       </div>

@@ -105,8 +105,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
   }))
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="space-y-4">
+      <div className="atlas-panel flex flex-wrap items-center gap-3 p-3">
         <Link href="/clientes">
           <Button variant="ghost" size="sm"><ArrowLeft size={16} className="mr-1" /> Clientes</Button>
         </Link>
@@ -117,26 +117,27 @@ export default async function ClienteDetalhePage({ params }: Props) {
           </Avatar>
           <h1 className="text-2xl font-bold text-slate-900">{cliente.nome}</h1>
         </div>
-        <Badge variant={cliente.ativo ? 'default' : 'secondary'}>{cliente.ativo ? 'Ativo' : 'Inativo'}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={cliente.ativo ? 'default' : 'secondary'}>{cliente.ativo ? 'Ativo' : 'Inativo'}</Badge>
+          <ClienteActions cliente={{
+            id: cliente.id,
+            nome: cliente.nome,
+            email: cliente.email,
+            telefone: cliente.telefone,
+            cpf: cliente.cpf,
+            dataNascimento: cliente.dataNascimento ? cliente.dataNascimento.toISOString().slice(0, 10) : null,
+            produtoContratado: cliente.produtoContratado,
+            metaEconomia,
+            observacoes: cliente.observacoes,
+            fotoUrl: cliente.fotoUrl,
+            ativo: cliente.ativo,
+          }} />
+        </div>
       </div>
 
-      <ClienteActions cliente={{
-        id: cliente.id,
-        nome: cliente.nome,
-        email: cliente.email,
-        telefone: cliente.telefone,
-        cpf: cliente.cpf,
-        dataNascimento: cliente.dataNascimento ? cliente.dataNascimento.toISOString().slice(0, 10) : null,
-        produtoContratado: cliente.produtoContratado,
-        metaEconomia,
-        observacoes: cliente.observacoes,
-        fotoUrl: cliente.fotoUrl,
-        ativo: cliente.ativo,
-      }} />
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 space-y-3">
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-[1.35fr_repeat(3,minmax(0,0.65fr))]">
+        <Card className="atlas-panel">
+          <CardContent className="space-y-2.5 p-4">
             <h3 className="font-medium text-slate-700">Contato</h3>
             {cliente.email && <div className="flex items-center gap-2 text-sm text-slate-600"><Mail size={14} /> {cliente.email}</div>}
             {cliente.telefone && <div className="flex items-center gap-2 text-sm text-slate-600"><Phone size={14} /> {cliente.telefone}</div>}
@@ -158,24 +159,24 @@ export default async function ClienteDetalhePage({ params }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 text-center">
+        <Card className="atlas-panel">
+          <CardContent className="p-4 text-center">
             <TrendingUp className="text-green-500 mx-auto mb-2" size={22} />
             <p className="text-xs text-slate-500">Economia Total</p>
             <p className="text-xl font-bold text-green-600">{formatCurrency(economiaTotal)}</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 text-center">
+        <Card className="atlas-panel">
+          <CardContent className="p-4 text-center">
             <Plane className="text-blue-500 mx-auto mb-2" size={22} />
             <p className="text-xs text-slate-500">Produtos</p>
             <p className="text-xl font-bold">{confirmadas.length + produtos.length}</p>
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5 text-center">
+        <Card className="atlas-panel">
+          <CardContent className="p-4 text-center">
             <DollarSign className="text-purple-500 mx-auto mb-2" size={22} />
             <p className="text-xs text-slate-500">ROI da Assessoria</p>
             <p className={`text-xl font-bold ${roi >= 0 ? 'text-green-600' : 'text-red-500'}`}>{roi.toFixed(0)}%</p>
@@ -184,8 +185,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
       </div>
 
       {metaEconomia > 0 && (
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
+        <Card className="atlas-panel">
+          <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Target size={16} className="text-blue-600" />
               <span className="font-medium">Meta de Economia</span>
@@ -208,7 +209,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
         </TabsList>
 
         {/* PRODUTOS: Passagem / Hotel / Passeio / Seguro */}
-        <TabsContent value="produtos" className="mt-4 space-y-4">
+        <TabsContent value="produtos" className="mt-3 space-y-3">
           <div className="flex justify-end">
             <AdicionarProdutoForm clienteId={id} gestores={gestores} />
           </div>
@@ -218,8 +219,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
                 const Icon = tipoIcones[p.tipo] ?? Plane
                 const economia = toNum(p.precoReferencia) - toNum(p.precoAtlas)
                 return (
-                  <Card key={p.id} className="border-0 shadow-sm">
-                    <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+                  <Card key={p.id} className="atlas-panel">
+                    <CardContent className="flex flex-wrap items-center justify-between gap-3 p-3">
                       <div className="flex items-center gap-3">
                         <div className="flex size-9 items-center justify-center rounded-md bg-[#0b3b31]/10 text-[#0b3b31]"><Icon size={16} /></div>
                         <div>
@@ -250,8 +251,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
               })}
             </div>
           ) : (
-            <Card className="border-0 shadow-sm">
-              <CardContent className="py-12 text-center text-slate-400">
+            <Card className="atlas-panel">
+              <CardContent className="py-8 text-center text-slate-400">
                 Nenhum produto cadastrado. Adicione passagens, hoteis, passeios e seguros.
               </CardContent>
             </Card>
@@ -259,20 +260,20 @@ export default async function ClienteDetalhePage({ params }: Props) {
         </TabsContent>
 
         {/* PROGRAMAS DE MILHAS */}
-        <TabsContent value="programas" className="mt-4">
+        <TabsContent value="programas" className="mt-3">
           <ProgramasMilhasManager clienteId={id} programas={programas} contas={contas} cartoes={cartoes} />
         </TabsContent>
 
         {/* PASSAGENS EMITIDAS */}
-        <TabsContent value="emissoes" className="mt-4">
-          <Card className="border-0 shadow-sm">
+        <TabsContent value="emissoes" className="mt-3">
+          <Card className="atlas-panel">
             <CardContent className="p-0">
               {emissoes.length > 0 ? (
                 <div className="divide-y">
                   {emissoes.map(e => {
                     const eco = calcEconomia(e.precoMercado, e.taxasPagas, e.feeCobrado)
                     return (
-                      <div key={e.id} className="p-4 flex items-center justify-between">
+                      <div key={e.id} className="flex items-center justify-between p-3">
                         <div className="flex items-center gap-4">
                           <div className="w-2 h-10 rounded-full" style={{ backgroundColor: e.programa?.cor ?? '#6b7280' }} />
                           <div>
@@ -294,7 +295,7 @@ export default async function ClienteDetalhePage({ params }: Props) {
                   })}
                 </div>
               ) : (
-                <div className="py-12 text-center text-slate-400">
+                <div className="py-8 text-center text-slate-400">
                   <p>Nenhuma passagem emitida cadastrada.</p>
                 </div>
               )}

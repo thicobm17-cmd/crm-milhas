@@ -36,28 +36,28 @@ export default async function RenovacoesPage() {
   const economiaContratos = renovacoes.reduce((acc, r) => acc + r.cliente.economiaTotal, 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 11</p>
-        <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Renovacoes</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Renovacoes</h1>
         <p className="mt-1 text-sm text-muted-foreground">Clientes com plano perto de vencer, historico do periodo e opcao de renovacao.</p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-3">
         <Card className="atlas-panel">
-          <CardContent className="p-5">
+          <CardContent className="p-3">
             <p className="text-sm text-muted-foreground">A renovar (proximos 30 dias)</p>
             <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">{aRenovar}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
-          <CardContent className="p-5">
+          <CardContent className="p-3">
             <p className="text-sm text-muted-foreground">Vencidos</p>
             <p className="mt-2 text-3xl font-semibold text-red-700">{vencidos}</p>
           </CardContent>
         </Card>
         <Card className="atlas-panel">
-          <CardContent className="p-5">
+          <CardContent className="p-3">
             <p className="text-sm text-muted-foreground">Economia gerada (carteira)</p>
             <p className="mt-2 text-3xl font-semibold text-[#0b3b31]">{formatCurrency(economiaContratos)}</p>
           </CardContent>
@@ -68,9 +68,9 @@ export default async function RenovacoesPage() {
         <CardHeader>
           <CardTitle>Fila de renovacoes</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2.5">
           {renovacoes.length > 0 ? renovacoes.map(({ cliente, info }) => (
-            <div key={cliente.id} className="grid gap-4 rounded-md border border-[#d7ad68]/25 bg-white/65 p-4 lg:grid-cols-[1fr_0.8fr_0.7fr_auto] lg:items-center">
+            <div key={cliente.id} className="grid gap-3 rounded-md border border-[#d7ad68]/25 bg-white/65 p-3 lg:grid-cols-[1fr_0.8fr_0.7fr_auto] lg:items-center">
               <div>
                 <p className="font-medium text-[#11231f]">{cliente.nome}</p>
                 <p className="text-sm text-muted-foreground">{cliente.produtoContratado || 'Produto Atlas'}</p>
@@ -91,7 +91,7 @@ export default async function RenovacoesPage() {
               </div>
             </div>
           )) : (
-            <p className="py-10 text-center text-sm text-muted-foreground">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               Nenhum cliente com periodo de acesso definido. Defina o acesso ao confirmar o pagamento no Financeiro.
             </p>
           )}

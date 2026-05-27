@@ -67,7 +67,7 @@ export function BackupPanel({ backups, souCEO }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 text-[#0b3b31]" size={18} />
@@ -88,11 +88,11 @@ export function BackupPanel({ backups, souCEO }: Props) {
 
       <div className="space-y-2">
         {backups.length === 0 ? (
-          <p className="rounded-md border border-dashed border-[#d7ad68]/40 bg-white/55 p-4 text-sm text-muted-foreground">
+          <p className="rounded-md border border-dashed border-[#d7ad68]/40 bg-white/55 p-3 text-sm text-muted-foreground">
             Nenhum backup salvo ainda. Clique em &quot;Gerar backup agora&quot; para criar o primeiro imediatamente.
           </p>
         ) : backups.map((backup) => (
-          <div key={backup.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+          <div key={backup.id} className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
             <div>
               <p className="text-sm font-medium text-[#11231f]">{formatDate(backup.createdAt)}</p>
               <p className="text-xs text-muted-foreground">

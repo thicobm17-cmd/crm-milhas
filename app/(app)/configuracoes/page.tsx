@@ -40,14 +40,14 @@ export default async function ConfiguracoesPage() {
   }))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 10</p>
-        <h1 className="mt-2 text-3xl font-semibold text-[#11231f]">Configuracoes</h1>
+        <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Configuracoes</h1>
         <p className="mt-1 text-sm text-muted-foreground">Perfil, cargos, fila de acesso e parametros do ecossistema Atlas.</p>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+      <div className="grid gap-3 xl:grid-cols-[0.85fr_1.15fr]">
         <Card className="atlas-panel">
           <CardHeader>
             <CardTitle className="flex items-center gap-2"><UserCog size={18} /> Meu perfil
@@ -69,25 +69,27 @@ export default async function ConfiguracoesPage() {
         </Card>
       </div>
 
-      <Card className="atlas-panel">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Tag size={18} /> Produtos e precos</CardTitle>
-          <p className="text-sm text-muted-foreground">Defina os precos dos seus produtos. Ao lancar um produto no cliente, o valor entra como receita no Financeiro.</p>
-        </CardHeader>
-        <CardContent>
-          <CatalogoProdutos />
-        </CardContent>
-      </Card>
+      <div className="grid gap-3 xl:grid-cols-[1.05fr_0.95fr]">
+        <Card className="atlas-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Tag size={18} /> Produtos e precos</CardTitle>
+            <p className="text-sm text-muted-foreground">Defina os precos dos seus produtos. Ao lancar um produto no cliente, o valor entra como receita no Financeiro.</p>
+          </CardHeader>
+          <CardContent>
+            <CatalogoProdutos />
+          </CardContent>
+        </Card>
 
-      <Card className="atlas-panel">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><ShieldCheck size={18} /> Backups automaticos</CardTitle>
-          <p className="text-sm text-muted-foreground">Snapshots completos do banco para baixar e guardar fora do Railway.</p>
-        </CardHeader>
-        <CardContent>
-          <BackupPanel backups={backups} souCEO={souCEO} />
-        </CardContent>
-      </Card>
+        <Card className="atlas-panel">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><ShieldCheck size={18} /> Backups automaticos</CardTitle>
+            <p className="text-sm text-muted-foreground">Snapshots completos do banco para baixar e guardar fora do Railway.</p>
+          </CardHeader>
+          <CardContent>
+            <BackupPanel backups={backups} souCEO={souCEO} />
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="atlas-panel">
         <CardHeader>

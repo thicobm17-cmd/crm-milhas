@@ -112,7 +112,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
 
   return (
     <>
-      <div className="atlas-panel flex flex-col gap-3 p-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="atlas-panel flex flex-col gap-3 p-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8f7040]">Link publico do funil</p>
           <p className="mt-1 break-all text-sm text-muted-foreground">{questionarioUrl}</p>
@@ -123,24 +123,24 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
         </Button>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-5">
+      <div className="grid gap-3 xl:grid-cols-5">
         {grouped.map((column) => (
-          <Card key={column.status} className="atlas-panel min-h-80">
-            <CardHeader className="gap-2 p-4">
+          <Card key={column.status} className="atlas-panel">
+            <CardHeader className="gap-1.5 p-3">
               <Badge variant="outline" className={column.color}>{column.status}</Badge>
               <p className="text-xs text-muted-foreground">{column.description}</p>
               <p className="text-xs font-semibold text-[#0b3b31]">{column.leads.length} lead(s)</p>
             </CardHeader>
-            <CardContent className="space-y-3 p-4 pt-0">
+            <CardContent className="space-y-2.5 p-3 pt-0">
               {column.leads.length === 0 && (
-                <div className="rounded-md border border-dashed border-[#d7ad68]/35 p-4 text-center text-xs text-muted-foreground">
+                <div className="rounded-md border border-dashed border-[#d7ad68]/35 p-3 text-center text-xs text-muted-foreground">
                   Nenhum lead neste status.
                 </div>
               )}
               {column.leads.map((lead) => {
                 const busy = loadingId === lead.id
                 return (
-                  <div key={lead.id} className="rounded-md border border-[#d7ad68]/25 bg-white/75 p-3 shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
+                  <div key={lead.id} className="rounded-md border border-[#d7ad68]/25 bg-white/75 p-2.5 shadow-sm transition hover:-translate-y-0.5 hover:bg-white">
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-semibold text-[#11231f]">{lead.nome}</p>
@@ -149,13 +149,13 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
                       </div>
                       {busy && <Loader2 className="animate-spin text-[#8f7040]" size={15} />}
                     </div>
-                    <div className="mt-3 space-y-1 text-xs">
+                    <div className="mt-2.5 space-y-1 text-xs">
                       <p>Gasto: <span className="font-medium">{lead.gastoMensal || 'Nao informado'}</span></p>
                       <p>Contato: <span className="font-medium">{lead.primeiroContatoGestor?.nome || 'Pendente'}</span></p>
                       <p>Call: <span className="font-medium">{formatDateTime(lead.callMarcadaPara)}</span></p>
                     </div>
 
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2.5 space-y-2">
                       <Button type="button" size="xs" variant="outline" className="w-full justify-start" onClick={() => setSelectedLead(lead)}>
                         <Eye size={13} /> Ver respostas
                       </Button>
@@ -212,9 +212,9 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
           <DialogHeader>
             <DialogTitle>{selectedLead?.nome}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {selectedLead && [...leadResumo(selectedLead), ...selectedLead.respostas].map((answer) => (
-              <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-3">
+              <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">{answer.bloco}</p>
                 <Label className="mt-2 block">{answer.pergunta}</Label>
                 <p className="mt-1 text-sm text-muted-foreground">{answer.resposta || 'Sem resposta'}</p>
