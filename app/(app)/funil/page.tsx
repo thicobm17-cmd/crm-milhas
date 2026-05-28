@@ -29,17 +29,18 @@ function uniqueSessions<T>(items: T[], predicate: (item: T) => boolean, getSessi
 }
 
 function buildFunilMetrics(events: Array<{ sessionId: string; eventType: string; stepIndex: number | null; stepLabel: string | null }>): FunilAnalyticsData {
-  const opened = uniqueSessions(events, (event) => event.eventType === 'ABRIU_LINK', (event) => event.sessionId)
-  const submitted = uniqueSessions(events, (event) => event.eventType === 'ENVIOU_RESPOSTAS', (event) => event.sessionId)
+  const metricEvents = events.filter((event) => !event.sessionId.startsWith('codex-test-'))
+  const opened = uniqueSessions(metricEvents, (event) => event.eventType === 'ABRIU_LINK', (event) => event.sessionId)
+  const submitted = uniqueSessions(metricEvents, (event) => event.eventType === 'ENVIOU_RESPOSTAS', (event) => event.sessionId)
   const reachedContact = uniqueSessions(
-    events,
+    metricEvents,
     (event) => ['CHEGOU_CAPTURA', 'ENVIOU_RESPOSTAS', 'CONFIRMOU'].includes(event.eventType),
     (event) => event.sessionId,
   )
   const totalClicks = opened.size
   const sessions = new Map<string, { lastStep: number; lastLabel: string; submitted: boolean }>()
 
-  events.forEach((event) => {
+  metricEvents.forEach((event) => {
     const current = sessions.get(event.sessionId) || { lastStep: 0, lastLabel: 'Abertura', submitted: false }
     if (event.eventType === 'ENVIOU_RESPOSTAS') current.submitted = true
 
@@ -53,7 +54,7 @@ function buildFunilMetrics(events: Array<{ sessionId: string; eventType: string;
 
   const stageViews = quizStages.map((stage) => {
     const views = uniqueSessions(
-      events,
+      metricEvents,
       (event) => event.stepIndex === stage.stepIndex && ['ABRIU_LINK', 'VIU_ETAPA', 'CHEGOU_CAPTURA', 'CONFIRMOU'].includes(event.eventType),
       (event) => event.sessionId,
     ).size
