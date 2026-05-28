@@ -187,6 +187,22 @@ model LeadResposta {
   @@map("lead_respostas")
 }
 
+model QuestionarioEvento {
+  id        String   @id @default(cuid())
+  sessionId String   @map("session_id")
+  eventType String   @map("event_type")
+  stepIndex Int?     @map("step_index")
+  stepLabel String?  @map("step_label")
+  path      String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([sessionId])
+  @@index([eventType])
+  @@index([createdAt])
+  @@map("questionario_eventos")
+}
+
 model CallVenda {
   id            String   @id @default(cuid())
   leadId        String?  @map("lead_id")

@@ -42,7 +42,7 @@ function getColumnStatus(lead: Lead) {
   if (lead.statusFinal === 'FOLLOW_UP') return 'Follow up'
   if (lead.statusFinal === 'CLIENTE_NEGADO') return 'Cliente negado'
   if (lead.statusCall === 'MARCADA') return 'Marcada'
-  if (lead.statusCall === 'AGUARDANDO_MARCACAO') return 'Aguardando marcacao'
+  if (lead.statusCall === 'AGUARDANDO_MARCACAO') return 'Aguardando marcação'
   return 'Aguardando entrevista'
 }
 
@@ -56,18 +56,18 @@ function leadResumo(lead: Lead): LeadAnswer[] {
     { id: `${lead.id}-nome`, bloco: 'Identificacao', pergunta: 'Nome completo', resposta: lead.nome },
     { id: `${lead.id}-whatsapp`, bloco: 'Identificacao', pergunta: 'WhatsApp', resposta: lead.whatsapp },
     { id: `${lead.id}-email`, bloco: 'Identificacao', pergunta: 'E-mail', resposta: lead.email },
-    { id: `${lead.id}-origem`, bloco: 'Origem', pergunta: 'Como chegou ate a Atlas', resposta: lead.origem || 'Nao informado' },
-    { id: `${lead.id}-indicacao`, bloco: 'Origem', pergunta: 'Quem indicou', resposta: lead.indicadoPor || 'Nao informado' },
-    { id: `${lead.id}-gasto`, bloco: 'Perfil financeiro', pergunta: 'Gasto/movimentacao mensal', resposta: lead.gastoMensal || 'Nao informado' },
+    { id: `${lead.id}-origem`, bloco: 'Origem', pergunta: 'Como chegou até a Atlas', resposta: lead.origem || 'Não informado' },
+    { id: `${lead.id}-indicacao`, bloco: 'Origem', pergunta: 'Quem indicou', resposta: lead.indicadoPor || 'Não informado' },
+    { id: `${lead.id}-gasto`, bloco: 'Perfil financeiro', pergunta: 'Gasto/movimentação mensal', resposta: lead.gastoMensal || 'Não informado' },
     {
       id: `${lead.id}-contato`,
-      bloco: 'Operacao comercial',
+      bloco: 'Operação comercial',
       pergunta: 'Primeiro contato',
-      resposta: lead.primeiroContatoRealizado ? `Realizado por ${lead.primeiroContatoGestor?.nome || 'gestor nao informado'}` : 'Pendente',
+      resposta: lead.primeiroContatoRealizado ? `Realizado por ${lead.primeiroContatoGestor?.nome || 'gestor não informado'}` : 'Pendente',
     },
-    { id: `${lead.id}-status-call`, bloco: 'Operacao comercial', pergunta: 'Status da call', resposta: getColumnStatus(lead) },
-    { id: `${lead.id}-data-call`, bloco: 'Operacao comercial', pergunta: 'Data e hora da call', resposta: formatDateTime(lead.callMarcadaPara) },
-    { id: `${lead.id}-follow-up`, bloco: 'Operacao comercial', pergunta: 'Inicio do follow up', resposta: formatDateTime(lead.followUpInicio) },
+    { id: `${lead.id}-status-call`, bloco: 'Operação comercial', pergunta: 'Status da call', resposta: getColumnStatus(lead) },
+    { id: `${lead.id}-data-call`, bloco: 'Operação comercial', pergunta: 'Data e hora da call', resposta: formatDateTime(lead.callMarcadaPara) },
+    { id: `${lead.id}-follow-up`, bloco: 'Operação comercial', pergunta: 'Início do follow up', resposta: formatDateTime(lead.followUpInicio) },
   ]
 }
 
@@ -114,7 +114,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
     <>
       <div className="atlas-panel flex flex-col gap-3 p-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8f7040]">Link publico do funil</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#8f7040]">Link público do funil</p>
           <p className="mt-1 break-all text-sm text-muted-foreground">{questionarioUrl}</p>
         </div>
         <Button type="button" onClick={copyLink} className="bg-[#0b3b31] text-[#f4d59a] hover:bg-[#12483d]">
@@ -150,7 +150,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
                       {busy && <Loader2 className="animate-spin text-[#8f7040]" size={15} />}
                     </div>
                     <div className="mt-2.5 space-y-1 text-xs">
-                      <p>Gasto: <span className="font-medium">{lead.gastoMensal || 'Nao informado'}</span></p>
+                      <p>Gasto: <span className="font-medium">{lead.gastoMensal || 'Não informado'}</span></p>
                       <p>Contato: <span className="font-medium">{lead.primeiroContatoGestor?.nome || 'Pendente'}</span></p>
                       <p>Call: <span className="font-medium">{formatDateTime(lead.callMarcadaPara)}</span></p>
                     </div>
@@ -174,7 +174,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
                         </div>
                       )}
 
-                      {(column.status === 'Aguardando marcacao' || column.status === 'Marcada') && (
+                      {(column.status === 'Aguardando marcação' || column.status === 'Marcada') && (
                         <div className="grid gap-2">
                           <Input
                             type="datetime-local"

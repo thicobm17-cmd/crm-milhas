@@ -22,7 +22,7 @@ function buildAnswers(respostas: unknown) {
 
 export async function POST(request: NextRequest) {
   const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!session) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const body = await request.json()
   const {
@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
   const clienteFechou = fechou === true || fechou === 'true'
   const pagamentoFeito = pago === true || pago === 'true'
   const dataHoraCall = parseSaoPauloDateTime(dataHora)
+  const callAnswers = buildAnswers(respostas)
 
   if (!produto && clienteFechou) {
     return NextResponse.json({ error: 'Informe o produto contratado.' }, { status: 400 })
@@ -65,16 +66,26 @@ export async function POST(request: NextRequest) {
           nome: String(manualLead.nome).trim(),
           whatsapp: String(manualLead.whatsapp).trim(),
           email: String(manualLead.email).trim().toLowerCase(),
-          origem: 'Indicacao',
+          origem: 'Indicação',
           indicadoPor: manualLead.indicadoPor || null,
           gastoMensal: manualLead.gastoMensal || null,
           statusCall: dataHoraCall ? 'MARCADA' : 'AGUARDANDO_MARCACAO',
           primeiroContatoRealizado: true,
           primeiroContatoGestorId: session.user.id,
           callMarcadaPara: dataHoraCall,
-          respostas: { create: buildAnswers(respostas) },
+          respostas: { create: callAnswers },
         },
         include: { respostas: true },
+      })
+    } else if (callAnswers.length > 0) {
+      const existingLeadId = lead.id
+      await tx.leadResposta.createMany({
+        data: callAnswers.map((answer) => ({
+          leadId: existingLeadId,
+          bloco: answer.bloco,
+          pergunta: answer.pergunta,
+          resposta: answer.resposta,
+        })),
       })
     }
 

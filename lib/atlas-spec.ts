@@ -17,54 +17,92 @@ export const leadColumns = [
   {
     status: 'Aguardando entrevista',
     color: 'bg-stone-200 text-stone-700 border-stone-300',
-    description: 'Lead entrou pelo link publico e ainda nao recebeu o primeiro contato.',
+    description: 'Lead entrou pelo link público e ainda não recebeu o primeiro contato.',
   },
   {
-    status: 'Aguardando marcacao',
+    status: 'Aguardando marcação',
     color: 'bg-blue-100 text-blue-800 border-blue-200',
-    description: 'Entrevista via WhatsApp ja foi feita e falta escolher data e hora.',
+    description: 'Entrevista via WhatsApp já foi feita e falta escolher data e hora.',
   },
   {
     status: 'Marcada',
     color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-    description: 'Call com data, horario e colaboradores definidos no calendario.',
+    description: 'Call com data, horário e colaboradores definidos no calendário.',
   },
   {
     status: 'Follow up',
     color: 'bg-amber-100 text-amber-800 border-amber-200',
-    description: 'Prazo ativo por 15 dias corridos a partir da selecao.',
+    description: 'Prazo ativo por 15 dias corridos a partir da seleção.',
   },
   {
     status: 'Cliente negado',
     color: 'bg-red-100 text-red-800 border-red-200',
-    description: 'Status automatico depois de 15 dias sem conversao no follow up.',
+    description: 'Status automático depois de 15 dias sem conversão no follow up.',
+  },
+]
+
+export const publicQuizQuestions = [
+  {
+    bloco: 'Perfil de viagem',
+    pergunta: 'Você viaja mais a trabalho ou a lazer?',
+    opcoes: ['Trabalho', 'Lazer', 'Os dois'],
+  },
+  {
+    bloco: 'Frequência de viagem',
+    pergunta: 'Quantas viagens você faz por ano?',
+    opcoes: ['1 a 2', '3 a 5', '6 ou mais', 'Quase não viajo, mas queria'],
+  },
+  {
+    bloco: 'Milhas',
+    pergunta: 'Você já acumula milhas?',
+    opcoes: ['Sim, e uso', 'Sim, mas estão paradas', 'Não sei se tenho', 'Não acumulo'],
+  },
+  {
+    bloco: 'Barreira principal',
+    pergunta: 'O que mais te impede de viajar mais?',
+    opcoes: ['Tempo pra planejar', 'Preço das passagens', 'Não sei usar milhas', 'Falta de organização'],
+  },
+  {
+    bloco: 'Perfil financeiro',
+    pergunta: 'Quanto você movimenta no cartão por mês, em média?',
+    opcoes: ['Até R$5 mil', 'R$5 a 15 mil', 'R$15 a 40 mil', 'Acima de R$40 mil'],
+  },
+  {
+    bloco: 'Destino desejado',
+    pergunta: 'Pra onde você sonha em ir nos próximos 12 meses?',
+    opcoes: ['Europa', 'EUA', 'Ásia', 'Brasil', 'Ainda decidindo'],
+  },
+  {
+    bloco: 'Contato preferido',
+    pergunta: 'Como prefere receber seu diagnóstico?',
+    opcoes: ['WhatsApp', 'E-mail'],
   },
 ]
 
 export const questionnaireBlocks = [
   {
     title: 'Perfil de viagens',
-    questions: ['O que mais valoriza ao viajar', 'Viagem dos sonhos', 'Viagens por ano', 'Viagens programadas nos proximos 6 a 12 meses'],
+    questions: ['O que mais valoriza ao viajar', 'Viagem dos sonhos', 'Viagens por ano', 'Viagens programadas nos próximos 6 a 12 meses'],
   },
   {
-    title: 'Situacao com milhas',
-    questions: ['Se ja acumula milhas', 'Programa principal e saldo atual', 'Cartao de credito principal', 'Como emite passagens hoje'],
+    title: 'Situação com milhas',
+    questions: ['Se já acumula milhas', 'Programa principal e saldo atual', 'Cartão de crédito principal', 'Como emite passagens hoje'],
   },
   {
     title: 'Perfil financeiro',
-    questions: ['Predominancia no cartao de credito'],
+    questions: ['Predominância no cartão de crédito'],
   },
   {
-    title: 'Contexto e motivacao',
-    questions: ['Conhecimento sobre gestao de milhas', 'Maior obstaculo para viajar', 'Motivo para buscar assessoria agora'],
+    title: 'Contexto e motivação',
+    questions: ['Conhecimento sobre gestão de milhas', 'Maior obstáculo para viajar', 'Motivo para buscar assessoria agora'],
   },
 ]
 
 export const qualificationRules = [
-  ['Acima de R$8.000/mes + cartao predominante', 'Gestao de Viagens Completa'],
-  ['Entre R$3.000 e R$8.000/mes', 'Avaliar na call'],
-  ['Abaixo de R$3.000 ou Pix/debito predominante', 'Consultoria'],
-  ['Veio por indicacao', 'Aplicar valor com desconto de indicacao'],
+  ['Acima de R$40 mil/mês ou alta frequência de viagens', 'Prioridade para Gestão de Viagens Completa'],
+  ['R$15 mil a R$40 mil/mês', 'Avaliar gestão completa ou acompanhamento na call'],
+  ['Até R$5 mil/mês ou dificuldade para usar milhas', 'Tende a encaixar melhor em consultoria'],
+  ['Veio por indicação', 'Aplicar condição comercial com indicação'],
 ]
 
 export const atlasPrograms = [

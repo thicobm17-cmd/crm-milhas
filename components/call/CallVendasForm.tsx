@@ -33,21 +33,21 @@ interface Props {
 }
 
 const spendOptions = [
-  'Ate R$3.000/mes',
-  'R$3.000 a R$8.000/mes',
-  'R$8.000 a R$20.000/mes',
-  'Acima de R$20.000/mes',
+  'Até R$5 mil',
+  'R$5 a 15 mil',
+  'R$15 a 40 mil',
+  'Acima de R$40 mil',
 ]
 
 const canvaLinks = [
-  { product: 'Gestao de Viagens Completa - Com indicacao', url: 'https://www.canva.com/' },
-  { product: 'Gestao de Viagens Completa - Sem indicacao', url: 'https://www.canva.com/' },
+  { product: 'Gestão de Viagens Completa - Com indicação', url: 'https://www.canva.com/' },
+  { product: 'Gestão de Viagens Completa - Sem indicação', url: 'https://www.canva.com/' },
   { product: 'Consultoria 1h', url: 'https://www.canva.com/' },
   { product: 'Consultoria + Acompanhamento', url: 'https://www.canva.com/' },
 ]
 
 function formatDateTime(value: string | null) {
-  if (!value) return 'Sem horario marcado'
+  if (!value) return 'Sem horário marcado'
   return formatSaoPauloDateTime(new Date(value))
 }
 
@@ -111,8 +111,14 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
-    setLoading(true)
     setMessage('')
+
+    if (origin === 'FUNIL' && !leadId) {
+      setMessage('Selecione um lead do funil antes de salvar a call.')
+      return
+    }
+
+    setLoading(true)
 
     const respostas = flatQuestions.map((item) => ({
       ...item,
@@ -135,7 +141,7 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
     setLoading(false)
     if (!response.ok) {
       const data = await response.json().catch(() => null)
-      setMessage(data?.error || 'Nao foi possivel salvar a call.')
+      setMessage(data?.error || 'Não foi possível salvar a call.')
       return
     }
 
@@ -157,7 +163,7 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
                 <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="FUNIL">Link do Funil</SelectItem>
-                  <SelectItem value="INDICACAO">Indicacao</SelectItem>
+                  <SelectItem value="INDICACAO">Indicação</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -195,10 +201,10 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
               </div>
               <div className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">Perfil financeiro</p>
-                <p className="mt-2 text-sm font-medium">Gasto/movimentacao mensal</p>
-                <p className="mt-1 text-sm text-muted-foreground">{selectedLead.gastoMensal || 'Nao informado'}</p>
+                <p className="mt-2 text-sm font-medium">Gasto/movimentação mensal</p>
+                <p className="mt-1 text-sm text-muted-foreground">{selectedLead.gastoMensal || 'Não informado'}</p>
               </div>
-              {selectedLead.respostas.length === 0 && <p className="text-sm text-muted-foreground">Esse lead ainda nao tem respostas salvas.</p>}
+              {selectedLead.respostas.length === 0 && <p className="text-sm text-muted-foreground">Esse lead ainda não tem respostas salvas.</p>}
               {selectedLead.respostas.map((answer) => (
                 <div key={answer.id} className="rounded-md border border-[#d7ad68]/25 bg-white/70 p-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#8f7040]">{answer.bloco}</p>
@@ -210,12 +216,15 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
           </Card>
         )}
 
-        {origin === 'INDICACAO' && (
-          <Card className="atlas-panel">
-            <CardHeader>
-              <CardTitle>Questionario manual durante a call</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        <Card className="atlas-panel">
+          <CardHeader>
+            <CardTitle>Questionário manual durante a call</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Faça estas perguntas em todas as calls. Quem veio pelo funil já aparece com as respostas do quiz acima, mas esta entrevista continua sendo obrigatória.
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {origin === 'INDICACAO' ? (
               <div className="grid gap-3 md:grid-cols-4">
                 <div className="space-y-2">
                   <Label>Nome completo</Label>
@@ -230,7 +239,7 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
                   <Input type="email" value={manualLead.email} onChange={(event) => updateManual('email', event.target.value)} />
                 </div>
                 <div className="space-y-2">
-                  <Label>Gasto/movimentacao mensal</Label>
+                  <Label>Gasto/movimentação mensal</Label>
                   <Select value={manualLead.gastoMensal} onValueChange={(value) => updateManual('gastoMensal', value ?? '')}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                     <SelectContent>
@@ -239,32 +248,36 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
                   </Select>
                 </div>
               </div>
+            ) : (
+              <div className="rounded-md border border-[#d7ad68]/25 bg-white/60 p-3 text-sm text-muted-foreground">
+                Lead selecionado no funil. Preencha abaixo a entrevista manual feita durante a call para complementar o diagnóstico.
+              </div>
+            )}
 
-              {questionnaireBlocks.map((block) => (
-                <div key={block.title} className="rounded-md border border-[#d7ad68]/25 bg-white/55 p-3">
-                  <h3 className="font-semibold text-[#0b3b31]">{block.title}</h3>
-                  <div className="mt-3 grid gap-3 md:grid-cols-2">
-                    {block.questions.map((question) => (
-                      <div key={question} className="space-y-2">
-                        <Label>{question}</Label>
-                        <Textarea
-                          value={manualAnswers[question] || ''}
-                          onChange={(event) => setManualAnswers((prev) => ({ ...prev, [question]: event.target.value }))}
-                        />
-                      </div>
-                    ))}
-                  </div>
+            {questionnaireBlocks.map((block) => (
+              <div key={block.title} className="rounded-md border border-[#d7ad68]/25 bg-white/55 p-3">
+                <h3 className="font-semibold text-[#0b3b31]">{block.title}</h3>
+                <div className="mt-3 grid gap-3 md:grid-cols-2">
+                  {block.questions.map((question) => (
+                    <div key={question} className="space-y-2">
+                      <Label>{question}</Label>
+                      <Textarea
+                        value={manualAnswers[question] || ''}
+                        onChange={(event) => setManualAnswers((prev) => ({ ...prev, [question]: event.target.value }))}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       </div>
 
       <div className="space-y-4">
         <Card className="atlas-dark-panel">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-[#f4d59a]"><Presentation size={18} /> Apresentacoes Canva</CardTitle>
+            <CardTitle className="flex items-center gap-2 text-[#f4d59a]"><Presentation size={18} /> Apresentações Canva</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2.5">
             {canvaLinks.map((item) => (
@@ -281,9 +294,9 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
             <CardTitle className="flex items-center gap-2"><MessageCircle size={18} /> Quebra-gelo</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-muted-foreground">
-            <p>- Qual viagem voce tiraria do papel se custo nao fosse o problema?</p>
+            <p>- Qual viagem você tiraria do papel se custo não fosse o problema?</p>
             <p>- O que mais te irrita hoje ao organizar uma viagem?</p>
-            <p>- Voce prefere conforto, frequencia ou economia?</p>
+            <p>- Você prefere conforto, frequência ou economia?</p>
           </CardContent>
         </Card>
 
@@ -317,7 +330,7 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
                 <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="true">Sim, vai para Clientes</SelectItem>
-                  <SelectItem value="false">Nao, follow up 15 dias</SelectItem>
+                  <SelectItem value="false">Não, follow up 15 dias</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -375,11 +388,11 @@ export function CallVendasForm({ leads, gestores, produtos }: Props) {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Observacoes</Label>
+              <Label>Observações</Label>
               <Textarea value={form.observacoes} onChange={(event) => update('observacoes', event.target.value)} />
             </div>
             {message && (
-              <Badge className={message.includes('Nao') ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}>
+              <Badge className={message.includes('Não') ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}>
                 {message}
               </Badge>
             )}

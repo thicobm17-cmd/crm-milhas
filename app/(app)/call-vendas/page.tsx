@@ -7,9 +7,9 @@ import { prisma } from '@/lib/db'
 export const dynamic = 'force-dynamic'
 
 const callSteps = [
-  'Selecionar origem: Link do Funil ou Indicacao',
-  'Puxar respostas do lead ou preencher questionario manual',
-  'Usar apresentacao correta do Canva para o produto',
+  'Selecionar origem: Link do Funil ou Indicação',
+  'Puxar respostas do quiz e preencher o questionário manual',
+  'Usar apresentação correta do Canva para o produto',
   'Definir desfecho: cliente fechado ou follow up de 15 dias',
 ]
 
@@ -66,7 +66,7 @@ export default async function CallVendasPage() {
         <p className="atlas-kicker text-xs font-semibold text-[#8f7040]">Aba 2</p>
         <h1 className="mt-1.5 text-2xl font-semibold text-[#11231f]">Call de vendas</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Roteiro operacional da call: origem, respostas, produto escolhido, pagamento e conversao automatica.
+          Roteiro operacional da call: origem, respostas, produto escolhido, pagamento e conversão automática.
         </p>
       </div>
 

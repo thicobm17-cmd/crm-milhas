@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import Image from 'next/image'
 import { ArrowLeft, CheckCircle2, ChevronRight, Loader2, MessageCircle, Send } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { publicQuizQuestions } from '@/lib/atlas-spec'
 
 type Answers = Record<string, string>
 
@@ -15,46 +16,10 @@ type QuizQuestion = {
   opcoes: string[]
 }
 
-const quizQuestions: QuizQuestion[] = [
-  {
-    bloco: 'Perfil de viagem',
-    pergunta: 'Você viaja mais a trabalho ou a lazer?',
-    opcoes: ['Trabalho', 'Lazer', 'Os dois'],
-  },
-  {
-    bloco: 'Frequência de viagem',
-    pergunta: 'Quantas viagens você faz por ano?',
-    opcoes: ['1 a 2', '3 a 5', '6 ou mais', 'Quase não viajo, mas queria'],
-  },
-  {
-    bloco: 'Milhas',
-    pergunta: 'Você já acumula milhas?',
-    opcoes: ['Sim, e uso', 'Sim, mas estão paradas', 'Não sei se tenho', 'Não acumulo'],
-  },
-  {
-    bloco: 'Barreira principal',
-    pergunta: 'O que mais te impede de viajar mais?',
-    opcoes: ['Tempo pra planejar', 'Preço das passagens', 'Não sei usar milhas', 'Falta de organização'],
-  },
-  {
-    bloco: 'Perfil financeiro',
-    pergunta: 'Quanto você movimenta no cartão por mês, em média?',
-    opcoes: ['Até R$5 mil', 'R$5 a 15 mil', 'R$15 a 40 mil', 'Acima de R$40 mil'],
-  },
-  {
-    bloco: 'Destino desejado',
-    pergunta: 'Pra onde você sonha em ir nos próximos 12 meses?',
-    opcoes: ['Europa', 'EUA', 'Ásia', 'Brasil', 'Ainda decidindo'],
-  },
-  {
-    bloco: 'Contato preferido',
-    pergunta: 'Como prefere receber seu diagnóstico?',
-    opcoes: ['WhatsApp', 'E-mail'],
-  },
-]
-
+const quizQuestions: QuizQuestion[] = publicQuizQuestions
 const totalSteps = quizQuestions.length + 1
 const whatsappUrl = 'https://wa.me/5521997334307'
+const sessionStorageKey = 'atlas_questionario_session_id'
 
 function onlyDigits(value: string) {
   return value.replace(/\D/g, '')
@@ -67,6 +32,16 @@ function isValidEmail(value: string) {
 function isValidWhatsapp(value: string) {
   const digits = onlyDigits(value)
   return digits.length >= 10 && digits.length <= 13
+}
+
+function createSessionId() {
+  if (typeof window === 'undefined') return ''
+  const existing = window.sessionStorage.getItem(sessionStorageKey)
+  if (existing) return existing
+
+  const id = window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  window.sessionStorage.setItem(sessionStorageKey, id)
+  return id
 }
 
 export default function QuestionarioPage() {
@@ -82,9 +57,79 @@ export default function QuestionarioPage() {
     origem: 'Instagram',
     indicadoPor: '',
   })
+  const sessionIdRef = useRef('')
+  const stepRef = useRef(0)
+  const stepLabelRef = useRef('Abertura')
+  const doneRef = useRef(false)
 
   const progress = done ? 100 : Math.round((Math.min(step, totalSteps) / totalSteps) * 100)
   const currentQuestion = step > 0 && step <= quizQuestions.length ? quizQuestions[step - 1] : null
+  const stepLabel = done
+    ? 'Confirmação'
+    : step === 0
+      ? 'Abertura'
+      : currentQuestion?.pergunta || 'Captura de contato'
+
+  const trackQuizEvent = useCallback((eventType: string, stepIndex: number, label: string) => {
+    if (typeof window === 'undefined') return
+
+    const sessionId = sessionIdRef.current || createSessionId()
+    sessionIdRef.current = sessionId
+
+    fetch('/api/questionario-metricas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        eventType,
+        stepIndex,
+        stepLabel: label,
+        path: window.location.pathname,
+      }),
+      keepalive: true,
+    }).catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    sessionIdRef.current = createSessionId()
+    trackQuizEvent('ABRIU_LINK', 0, 'Abertura')
+  }, [trackQuizEvent])
+
+  useEffect(() => {
+    stepRef.current = done ? totalSteps + 1 : step
+    stepLabelRef.current = stepLabel
+    doneRef.current = done
+
+    if (!sessionIdRef.current) return
+
+    if (done) {
+      trackQuizEvent('CONFIRMOU', totalSteps + 1, 'Confirmação')
+      return
+    }
+
+    trackQuizEvent(step === totalSteps ? 'CHEGOU_CAPTURA' : 'VIU_ETAPA', step, stepLabel)
+  }, [done, step, stepLabel, trackQuizEvent])
+
+  useEffect(() => {
+    function handlePageHide() {
+      if (!sessionIdRef.current || doneRef.current) return
+
+      const body = JSON.stringify({
+        sessionId: sessionIdRef.current,
+        eventType: 'SAIU',
+        stepIndex: stepRef.current,
+        stepLabel: stepLabelRef.current,
+        path: window.location.pathname,
+      })
+
+      if (!navigator.sendBeacon('/api/questionario-metricas', body)) {
+        trackQuizEvent('SAIU', stepRef.current, stepLabelRef.current)
+      }
+    }
+
+    window.addEventListener('pagehide', handlePageHide)
+    return () => window.removeEventListener('pagehide', handlePageHide)
+  }, [trackQuizEvent])
 
   function updateForm(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -156,6 +201,7 @@ export default function QuestionarioPage() {
       return
     }
 
+    trackQuizEvent('ENVIOU_RESPOSTAS', totalSteps + 1, 'Confirmação')
     setDone(true)
   }
 

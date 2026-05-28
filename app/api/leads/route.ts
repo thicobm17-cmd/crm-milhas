@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
           ? respostas
               .filter((item) => item?.pergunta && item?.resposta)
               .map((item) => ({
-                bloco: String(item.bloco || 'Questionario'),
+                bloco: String(item.bloco || 'Questionário'),
                 pergunta: String(item.pergunta),
                 resposta: String(item.resposta),
               }))
