@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Orbitron, Space_Grotesk } from "next/font/google";
+import { PwaRegister } from "@/components/PwaRegister";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -13,8 +14,35 @@ const orbitron = Orbitron({
 });
 
 export const metadata: Metadata = {
-  title: "Atlas Beyond Destinations CRM",
-  description: "CRM Atlas para funil, vendas, clientes, viagens, milhas, financeiro e renovacoes.",
+  applicationName: "Atlas CRM",
+  title: {
+    default: "Atlas CRM",
+    template: "%s | Atlas CRM",
+  },
+  description: "CRM Atlas para funil, vendas, clientes, viagens, milhas, financeiro e renovações.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Atlas CRM",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+    shortcut: ["/favicon.ico"],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#071d19",
+  colorScheme: "dark light",
 };
 
 export default function RootLayout({
@@ -24,7 +52,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${spaceGrotesk.variable} ${orbitron.variable} h-full antialiased`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <PwaRegister />
+        {children}
+      </body>
     </html>
   );
 }
