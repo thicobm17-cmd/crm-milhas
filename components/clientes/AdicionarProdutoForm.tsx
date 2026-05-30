@@ -80,7 +80,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
         <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>Novo produto de viagem</DialogTitle></DialogHeader>
           <form onSubmit={salvar} className="mt-2 space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Tipo *</Label>
                 <Select value={form.tipo} onValueChange={v => update('tipo', v ?? 'PASSAGEM')}>
@@ -102,7 +102,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
             </div>
 
             {isPassagem && (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2"><Label>Origem</Label><Input value={form.origem} onChange={e => update('origem', e.target.value)} placeholder="GRU" /></div>
                 <div className="space-y-2"><Label>Destino</Label><Input value={form.destino} onChange={e => update('destino', e.target.value)} placeholder="LIS" /></div>
                 <div className="space-y-2">
@@ -125,7 +125,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>{isPassagem ? 'Data de ida' : isHotel ? 'Check-in' : isSeguro ? 'Inicio' : 'Data do passeio'}</Label>
                 <Input type="date" value={form.dataInicio} onChange={e => update('dataInicio', e.target.value)} />
@@ -138,7 +138,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>{isPassagem ? 'Preco companhia (R$)' : 'Preco plataforma (R$)'}</Label>
                 <Input type="number" step="0.01" value={form.precoReferencia} onChange={e => update('precoReferencia', e.target.value)} />

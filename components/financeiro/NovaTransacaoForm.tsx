@@ -90,7 +90,7 @@ export function NovaTransacaoForm({ clientes }: Props) {
               <Label>Descrição *</Label>
               <Input value={form.descricao} onChange={e => update('descricao', e.target.value)} required />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Valor (R$) *</Label>
                 <Input type="number" step="0.01" value={form.valor} onChange={e => update('valor', e.target.value)} required />

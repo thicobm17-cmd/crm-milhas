@@ -394,7 +394,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                   </SelectContent>
                 </Select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Fatura (R$)</Label>
                   <Input type="number" step="0.01" value={calc.valorFatura} onChange={e => setCalc(prev => ({ ...prev, valorFatura: e.target.value }))} />
@@ -453,7 +453,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
                 <p className="mb-2 text-sm font-medium text-[#0b3b31]">Adicionar cartao</p>
                 <div className="space-y-2">
                   <Input placeholder="Nome do cartao" value={cartaoForm.nome} onChange={e => updateCartao('nome', e.target.value)} />
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <Input type="number" step="0.01" placeholder="Pts/USD" value={cartaoForm.pontosPorDolar} onChange={e => updateCartao('pontosPorDolar', e.target.value)} />
                     <Input type="number" placeholder="VIP total" value={cartaoForm.salasVipTotal} onChange={e => updateCartao('salasVipTotal', e.target.value)} />
                     <Input type="number" placeholder="VIP usadas" value={cartaoForm.salasVipUsadas} onChange={e => updateCartao('salasVipUsadas', e.target.value)} />
@@ -543,7 +543,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
               <Label>Saldo atual</Label>
               <Input type="number" value={editForm.saldoAtual} onChange={e => setEditForm(prev => ({ ...prev, saldoAtual: e.target.value }))} />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Clube mensal</Label>
                 <Input type="number" value={editForm.clubeMensalMilhas} onChange={e => setEditForm(prev => ({ ...prev, clubeMensalMilhas: e.target.value }))} />
@@ -563,7 +563,7 @@ export function ProgramasMilhasManager({ clienteId, programas, contas, cartoes }
           <DialogHeader><DialogTitle>Editar cartao</DialogTitle></DialogHeader>
           <form onSubmit={salvarCartao} className="space-y-3">
             <div className="space-y-2"><Label>Nome</Label><Input value={cartaoForm.nome} onChange={e => updateCartao('nome', e.target.value)} /></div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <div className="space-y-2"><Label>Pts/USD</Label><Input type="number" step="0.01" value={cartaoForm.pontosPorDolar} onChange={e => updateCartao('pontosPorDolar', e.target.value)} /></div>
               <div className="space-y-2"><Label>VIP total</Label><Input type="number" value={cartaoForm.salasVipTotal} onChange={e => updateCartao('salasVipTotal', e.target.value)} /></div>
               <div className="space-y-2"><Label>VIP usadas</Label><Input type="number" value={cartaoForm.salasVipUsadas} onChange={e => updateCartao('salasVipUsadas', e.target.value)} /></div>

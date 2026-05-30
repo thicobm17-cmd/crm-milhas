@@ -187,7 +187,7 @@ export function FunilBoard({ leads, gestores, questionarioUrl }: Props) {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <Button type="button" size="xs" variant="outline" onClick={() => patchLead(lead.id, 'follow_up')}>
                           Follow up
                         </Button>

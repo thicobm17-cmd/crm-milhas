@@ -243,7 +243,7 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
               <Label>Nome completo</Label>
               <Input value={form.nome} onChange={e => update('nome', e.target.value)} required />
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>Email</Label>
                 <Input type="email" value={form.email} onChange={e => update('email', e.target.value)} />
