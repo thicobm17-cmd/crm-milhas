@@ -365,6 +365,269 @@ model Notificacao {
   @@map("notificacoes")
 }
 
+model SolicitacaoOrcamento {
+  id                    String   @id @default(cuid())
+  empresaId             String?  @map("empresa_id")
+  clienteId             String?  @map("cliente_id")
+  consultorId           String?  @map("consultor_id")
+  nome                  String
+  telefone              String
+  email                 String?
+  destinoDesejado       String?  @map("destino_desejado")
+  dataViagem            DateTime? @map("data_viagem")
+  quantidadePassageiros Int      @default(1) @map("quantidade_passageiros")
+  observacoes           String?
+  origemLead            String   @default("SITE") @map("origem_lead")
+  status                String   @default("NOVA")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  cotacoes CotacaoAgencia[]
+
+  @@index([status])
+  @@index([origemLead])
+  @@index([createdAt])
+  @@map("solicitacoes_orcamento")
+}
+
+model CotacaoAgencia {
+  id                String   @id @default(cuid())
+  solicitacaoId     String?  @map("solicitacao_id")
+  clienteId         String?  @map("cliente_id")
+  consultorId       String?  @map("consultor_id")
+  origemLead        String   @default("SITE") @map("origem_lead")
+  destino           String
+  dataViagem        DateTime? @map("data_viagem")
+  status            String   @default("AGUARDANDO")
+  valorTotalVenda   Decimal  @default(0) @map("valor_total_venda") @db.Decimal(12, 2)
+  custoTotal        Decimal  @default(0) @map("custo_total") @db.Decimal(12, 2)
+  lucroTotal        Decimal  @default(0) @map("lucro_total") @db.Decimal(12, 2)
+  margemPercentual  Decimal  @default(0) @map("margem_percentual") @db.Decimal(8, 2)
+  fornecedorMilhas  String?  @map("fornecedor_milhas")
+  programaMilhas    String?  @map("programa_milhas")
+  quantidadeMilhas  Int?     @map("quantidade_milhas")
+  custoMilheiro     Decimal? @map("custo_milheiro") @db.Decimal(10, 2)
+  custoTotalMilhas  Decimal? @map("custo_total_milhas") @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  solicitacao SolicitacaoOrcamento? @relation(fields: [solicitacaoId], references: [id], onDelete: SetNull)
+  itens       CotacaoItem[]
+  vendas      VendaAgencia[]
+  viagens     ViagemAgencia[]
+
+  @@index([status])
+  @@index([origemLead])
+  @@index([createdAt])
+  @@map("cotacoes_agencia")
+}
+
+model CotacaoItem {
+  id              String   @id @default(cuid())
+  cotacaoId       String   @map("cotacao_id")
+  tipoItem        String   @map("tipo_item")
+  descricao       String
+  fornecedor      String?
+  valorVenda      Decimal  @default(0) @map("valor_venda") @db.Decimal(12, 2)
+  custoFornecedor Decimal  @default(0) @map("custo_fornecedor") @db.Decimal(12, 2)
+  lucro           Decimal  @default(0) @db.Decimal(12, 2)
+  observacoes     String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  cotacao CotacaoAgencia @relation(fields: [cotacaoId], references: [id], onDelete: Cascade)
+
+  @@index([tipoItem])
+  @@map("cotacao_itens")
+}
+
+model VendaAgencia {
+  id              String   @id @default(cuid())
+  cotacaoId       String?  @map("cotacao_id")
+  clienteId       String?  @map("cliente_id")
+  consultorId     String?  @map("consultor_id")
+  valorVenda      Decimal  @default(0) @map("valor_venda") @db.Decimal(12, 2)
+  custoTotal      Decimal  @default(0) @map("custo_total") @db.Decimal(12, 2)
+  lucroTotal      Decimal  @default(0) @map("lucro_total") @db.Decimal(12, 2)
+  status          String   @default("PAGAMENTO")
+  pagamentoStatus String   @default("A_RECEBER") @map("pagamento_status")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  cotacao CotacaoAgencia? @relation(fields: [cotacaoId], references: [id], onDelete: SetNull)
+  viagens ViagemAgencia[]
+
+  @@index([status])
+  @@index([pagamentoStatus])
+  @@index([createdAt])
+  @@map("vendas_agencia")
+}
+
+model ViagemAgencia {
+  id                   String   @id @default(cuid())
+  vendaId              String?  @map("venda_id")
+  cotacaoId            String?  @map("cotacao_id")
+  clienteId            String?  @map("cliente_id")
+  consultorResponsavel String?  @map("consultor_responsavel")
+  destino              String
+  dataIda              DateTime? @map("data_ida")
+  dataVolta            DateTime? @map("data_volta")
+  status               String   @default("PLANEJADA")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  venda       VendaAgencia? @relation(fields: [vendaId], references: [id], onDelete: SetNull)
+  cotacao     CotacaoAgencia? @relation(fields: [cotacaoId], references: [id], onDelete: SetNull)
+  voos        VooOperacional[]
+  hospedagens HospedagemOperacional[]
+  transfers   TransferOperacional[]
+  seguros     SeguroOperacional[]
+  documentos  DocumentoAgencia[]
+
+  @@index([status])
+  @@index([dataIda])
+  @@map("viagens_agencia")
+}
+
+model VooOperacional {
+  id               String   @id @default(cuid())
+  viagemId         String   @map("viagem_id")
+  companhia        String
+  localizador      String?
+  origem           String
+  destino          String
+  dataHoraPartida  DateTime? @map("data_hora_partida")
+  dataHoraChegada  DateTime? @map("data_hora_chegada")
+  statusCheckin    String   @default("NAO_DISPONIVEL") @map("status_checkin")
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  viagem ViagemAgencia @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([dataHoraPartida])
+  @@index([statusCheckin])
+  @@map("voos_operacionais")
+}
+
+model HospedagemOperacional {
+  id        String   @id @default(cuid())
+  viagemId  String   @map("viagem_id")
+  hotel     String
+  checkin   DateTime?
+  checkout  DateTime?
+  voucher   String?
+  status    String   @default("PENDENTE")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  viagem ViagemAgencia @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([checkin])
+  @@index([checkout])
+  @@map("hospedagens_operacionais")
+}
+
+model TransferOperacional {
+  id          String   @id @default(cuid())
+  viagemId    String   @map("viagem_id")
+  fornecedor  String?
+  data        DateTime?
+  horario     String?
+  motorista   String?
+  observacoes String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  viagem ViagemAgencia @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([data])
+  @@map("transfers_operacionais")
+}
+
+model SeguroOperacional {
+  id           String   @id @default(cuid())
+  viagemId     String   @map("viagem_id")
+  seguradora   String
+  numeroApolice String? @map("numero_apolice")
+  validade     DateTime?
+  documentoPdf String?  @map("documento_pdf")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  viagem ViagemAgencia @relation(fields: [viagemId], references: [id], onDelete: Cascade)
+
+  @@index([validade])
+  @@map("seguros_operacionais")
+}
+
+model DocumentoAgencia {
+  id              String   @id @default(cuid())
+  viagemId        String?  @map("viagem_id")
+  clienteId       String?  @map("cliente_id")
+  tipo            String
+  titulo          String
+  status          String   @default("RASCUNHO")
+  valor           Decimal? @db.Decimal(12, 2)
+  linkArquivo     String?  @map("link_arquivo")
+  linkAssinatura  String?  @map("link_assinatura")
+  statusAssinatura String? @map("status_assinatura")
+  dataAssinatura  DateTime? @map("data_assinatura")
+  ipAssinatura    String?  @map("ip_assinatura")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  viagem ViagemAgencia? @relation(fields: [viagemId], references: [id], onDelete: SetNull)
+
+  @@index([tipo])
+  @@index([status])
+  @@map("documentos_agencia")
+}
+
+model AutomacaoAgencia {
+  id        String   @id @default(cuid())
+  evento    String
+  canal     String   @default("WHATSAPP_EMAIL")
+  ativa     Boolean  @default(true)
+  titulo    String
+  mensagem  String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([evento])
+  @@map("automacoes_agencia")
+}
+
+model EstoqueMilhasPrograma {
+  id                 String   @id @default(cuid())
+  programa           String   @unique
+  logoUrl            String?  @map("logo_url")
+  saldoAtual         Int      @default(0) @map("saldo_atual")
+  custoTotal         Decimal  @default(0) @map("custo_total") @db.Decimal(12, 2)
+  custoMedioMilheiro Decimal  @default(0) @map("custo_medio_milheiro") @db.Decimal(10, 2)
+  clubeMensalMilhas  Int      @default(0) @map("clube_mensal_milhas")
+  clubeCustoMensal   Decimal  @default(0) @map("clube_custo_mensal") @db.Decimal(10, 2)
+  fornecedorNome     String?  @map("fornecedor_nome")
+  fornecedorContato  String?  @map("fornecedor_contato")
+  fornecedorEmail    String?  @map("fornecedor_email")
+  observacoes        String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  movimentacoes MovimentacaoEstoqueMilhas[]
+
+  @@map("estoque_milhas_programas")
+}
+
+model MovimentacaoEstoqueMilhas {
+  id          String   @id @default(cuid())
+  estoqueId   String   @map("estoque_id")
+  tipo        String   @default("ENTRADA")
+  quantidade  Int
+  custoTotal  Decimal  @default(0) @map("custo_total") @db.Decimal(12, 2)
+  descricao   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  estoque EstoqueMilhasPrograma @relation(fields: [estoqueId], references: [id], onDelete: Cascade)
+
+  @@index([tipo])
+  @@index([createdAt])
+  @@map("movimentacoes_estoque_milhas")
+}
+
 model BackupSnapshot {
   id           String   @id @default(cuid())
   reason       String   @default("manual")

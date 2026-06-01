@@ -21,6 +21,19 @@ const MODEL_EXPORTS = [
   ['renovacoes', 'renovacao'],
   ['produtosCatalogo', 'produtoCatalogo'],
   ['notificacoes', 'notificacao'],
+  ['solicitacoesOrcamento', 'solicitacaoOrcamento'],
+  ['cotacoesAgencia', 'cotacaoAgencia'],
+  ['cotacaoItens', 'cotacaoItem'],
+  ['vendasAgencia', 'vendaAgencia'],
+  ['viagensAgencia', 'viagemAgencia'],
+  ['voosOperacionais', 'vooOperacional'],
+  ['hospedagensOperacionais', 'hospedagemOperacional'],
+  ['transfersOperacionais', 'transferOperacional'],
+  ['segurosOperacionais', 'seguroOperacional'],
+  ['documentosAgencia', 'documentoAgencia'],
+  ['automacoesAgencia', 'automacaoAgencia'],
+  ['estoqueMilhasProgramas', 'estoqueMilhasPrograma'],
+  ['movimentacoesEstoqueMilhas', 'movimentacaoEstoqueMilhas'],
 ]
 
 function retainCount() {

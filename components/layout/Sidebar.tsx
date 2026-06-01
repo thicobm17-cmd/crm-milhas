@@ -7,6 +7,7 @@ import { signOut } from 'next-auth/react'
 import { cn } from '@/lib/utils'
 import {
   BarChart3,
+  BriefcaseBusiness,
   CalendarDays,
   ClipboardList,
   DollarSign,
@@ -19,6 +20,7 @@ import {
   Settings,
   Target,
   Users,
+  Warehouse,
 } from 'lucide-react'
 
 const navItems = [
@@ -26,6 +28,8 @@ const navItems = [
   { href: '/funil', label: 'Funil de vendas', icon: ClipboardList },
   { href: '/call-vendas', label: 'Call de vendas', icon: PhoneCall },
   { href: '/clientes', label: 'Clientes', icon: Users },
+  { href: '/agencia', label: 'Agência', icon: BriefcaseBusiness },
+  { href: '/estoque-milhas', label: 'Estoque de milhas', icon: Warehouse },
   { href: '/emissoes', label: 'Emissoes', icon: Plane },
   { href: '/calendario', label: 'Calendario', icon: CalendarDays },
   { href: '/financeiro', label: 'Financeiro', icon: DollarSign },

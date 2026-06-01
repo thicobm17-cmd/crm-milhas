@@ -16,7 +16,7 @@ interface Props {
   searchParams: Promise<{ mes?: string; ano?: string }>
 }
 
-const receitaTipos = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao']
+const receitaTipos = ['receita', 'receita_emissao', 'fee_mensal', 'fee_emissao', 'receita_agencia']
 const despesaTipos = ['despesa', 'compra_milhas', 'imposto']
 
 const tipoLabels: Record<string, string> = {
@@ -24,6 +24,7 @@ const tipoLabels: Record<string, string> = {
   receita_emissao: 'Receita de emissao',
   fee_mensal: 'Produto contratado',
   fee_emissao: 'Receita de emissao',
+  receita_agencia: 'Receita agência',
   despesa: 'Despesa',
   compra_milhas: 'Compra de Milhas',
   imposto: 'Imposto de renda',
