@@ -11,6 +11,11 @@ interface Props {
   status: string
 }
 
+const statusLabels: Record<string, string> = {
+  EM_COTACAO: 'Em cotacao',
+  EMITIDO: 'Emitido',
+}
+
 export function ProdutoActions({ id, status }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -36,7 +41,9 @@ export function ProdutoActions({ id, status }: Props) {
   return (
     <div className="flex items-center gap-1">
       <Select value={status} onValueChange={v => mudarStatus(v ?? status)} disabled={loading}>
-        <SelectTrigger className="h-7 w-[120px] text-xs"><SelectValue /></SelectTrigger>
+        <SelectTrigger className="h-7 w-[120px] text-xs">
+          <SelectValue>{value => statusLabels[String(value)] ?? 'Em cotacao'}</SelectValue>
+        </SelectTrigger>
         <SelectContent>
           <SelectItem value="EM_COTACAO">Em cotacao</SelectItem>
           <SelectItem value="EMITIDO">Emitido</SelectItem>

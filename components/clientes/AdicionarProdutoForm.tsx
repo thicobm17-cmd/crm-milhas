@@ -23,8 +23,20 @@ const tipos = [
   { value: 'SEGURO', label: 'Seguro' },
 ]
 
+function parseMoney(value: string) {
+  if (!value) return 0
+  const normalized = value.trim()
+  if (!normalized) return 0
+  if (normalized.includes(',')) {
+    return Number(normalized.replace(/\./g, '').replace(',', '.')) || 0
+  }
+  return Number(normalized) || 0
+}
+
 export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
   const router = useRouter()
+  const gestorLabels = Object.fromEntries(gestores.map((gestor) => [gestor.id, gestor.nome]))
+  const tipoLabels = Object.fromEntries(tipos.map((tipo) => [tipo.value, tipo.label]))
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
@@ -46,11 +58,6 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
   function update(field: string, value: string) {
     if (erro) setErro('')
     setForm(prev => ({ ...prev, [field]: value }))
-  }
-
-  function parseMoney(value: string) {
-    if (!value) return 0
-    return Number(value.replace(/\./g, '').replace(',', '.')) || 0
   }
 
   const economia = parseMoney(form.precoReferencia) - parseMoney(form.precoAtlas)
@@ -112,7 +119,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
               <div className="space-y-2">
                 <Label>Tipo *</Label>
                 <Select value={form.tipo} onValueChange={v => update('tipo', v ?? 'PASSAGEM')}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger><SelectValue>{value => tipoLabels[String(value)] ?? 'Passagem'}</SelectValue></SelectTrigger>
                   <SelectContent>
                     {tipos.map(t => <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>)}
                   </SelectContent>
@@ -121,7 +128,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
               <div className="space-y-2">
                 <Label>Responsavel</Label>
                 <Select value={form.responsavelId} onValueChange={v => update('responsavelId', v ?? '')}>
-                  <SelectTrigger><SelectValue placeholder="Selecione" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Selecione">{value => gestorLabels[String(value)] ?? 'Selecione'}</SelectValue></SelectTrigger>
                   <SelectContent>
                     {gestores.map(g => <SelectItem key={g.id} value={g.id}>{g.nome}</SelectItem>)}
                   </SelectContent>
@@ -136,7 +143,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
                 <div className="space-y-2">
                   <Label>Classe</Label>
                   <Select value={form.classe} onValueChange={v => update('classe', v ?? 'Economica')}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger><SelectValue>{value => String(value || 'Economica')}</SelectValue></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Economica">Economica</SelectItem>
                       <SelectItem value="Executiva">Executiva</SelectItem>
@@ -169,11 +176,11 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>{isPassagem ? 'Preco companhia (R$)' : 'Preco plataforma (R$)'}</Label>
-                <Input type="number" step="0.01" value={form.precoReferencia} onChange={e => update('precoReferencia', e.target.value)} />
+                <Input inputMode="decimal" value={form.precoReferencia} onChange={e => update('precoReferencia', e.target.value)} placeholder="Ex: 4.463,00" />
               </div>
               <div className="space-y-2">
                 <Label>Preco Atlas (R$)</Label>
-                <Input type="number" step="0.01" value={form.precoAtlas} onChange={e => update('precoAtlas', e.target.value)} />
+                <Input inputMode="decimal" value={form.precoAtlas} onChange={e => update('precoAtlas', e.target.value)} placeholder="Ex: 246,26" />
               </div>
             </div>
 

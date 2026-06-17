@@ -7,7 +7,12 @@ import { prisma } from '@/lib/db'
 function parseMoney(value: unknown) {
   if (value === null || value === undefined || value === '') return 0
   if (typeof value === 'number') return Number.isFinite(value) ? value : 0
-  return Number(String(value).replace(/\./g, '').replace(',', '.')) || 0
+  const normalized = String(value).trim()
+  if (!normalized) return 0
+  if (normalized.includes(',')) {
+    return Number(normalized.replace(/\./g, '').replace(',', '.')) || 0
+  }
+  return Number(normalized) || 0
 }
 
 export async function POST(request: NextRequest) {

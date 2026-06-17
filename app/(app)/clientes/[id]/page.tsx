@@ -238,7 +238,9 @@ export default async function ClienteDetalhePage({ params }: Props) {
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-emerald-700">+{formatCurrency(economia)}</p>
+                          <p className={`text-sm font-semibold ${economia >= 0 ? 'text-emerald-700' : 'text-red-600'}`}>
+                            {economia >= 0 ? '+' : ''}{formatCurrency(economia)}
+                          </p>
                           <Badge className={p.status === 'EMITIDO' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}>
                             {p.status === 'EMITIDO' ? 'Emitido' : 'Em cotacao'}
                           </Badge>
