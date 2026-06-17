@@ -27,6 +27,7 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [erro, setErro] = useState('')
   const [form, setForm] = useState({
     tipo: 'PASSAGEM',
     nome: '',
@@ -43,10 +44,16 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
   })
 
   function update(field: string, value: string) {
+    if (erro) setErro('')
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
-  const economia = (parseFloat(form.precoReferencia) || 0) - (parseFloat(form.precoAtlas) || 0)
+  function parseMoney(value: string) {
+    if (!value) return 0
+    return Number(value.replace(/\./g, '').replace(',', '.')) || 0
+  }
+
+  const economia = parseMoney(form.precoReferencia) - parseMoney(form.precoAtlas)
   const isPassagem = form.tipo === 'PASSAGEM'
   const isHotel = form.tipo === 'HOTEL'
   const isSeguro = form.tipo === 'SEGURO'
@@ -54,20 +61,41 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
 
   async function salvar(e: React.FormEvent) {
     e.preventDefault()
+    setErro('')
     setLoading(true)
-    await fetch('/api/produtos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clienteId, ...form }),
-    })
-    setLoading(false)
-    setOpen(false)
-    setForm({
-      tipo: 'PASSAGEM', nome: '', local: '', origem: '', destino: '',
-      dataInicio: '', dataFim: '', classe: 'Economica',
-      precoReferencia: '', precoAtlas: '', responsavelId: gestores[0]?.id ?? '', observacoes: '',
-    })
-    router.refresh()
+    const controller = new AbortController()
+    const timeout = window.setTimeout(() => controller.abort(), 15000)
+
+    try {
+      const response = await fetch('/api/produtos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clienteId, ...form }),
+        signal: controller.signal,
+      })
+
+      const data = await response.json().catch(() => null)
+      if (!response.ok) {
+        throw new Error(data?.error || 'Nao foi possivel salvar o produto.')
+      }
+
+      setOpen(false)
+      setForm({
+        tipo: 'PASSAGEM', nome: '', local: '', origem: '', destino: '',
+        dataInicio: '', dataFim: '', classe: 'Economica',
+        precoReferencia: '', precoAtlas: '', responsavelId: gestores[0]?.id ?? '', observacoes: '',
+      })
+      router.refresh()
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setErro('O salvamento demorou demais. Verifique sua conexao e tente novamente.')
+      } else {
+        setErro(error instanceof Error ? error.message : 'Erro ao salvar produto.')
+      }
+    } finally {
+      window.clearTimeout(timeout)
+      setLoading(false)
+    }
   }
 
   return (
@@ -152,6 +180,12 @@ export function AdicionarProdutoForm({ clienteId, gestores }: Props) {
             {economia > 0 && (
               <p className="rounded-md bg-emerald-50 p-2 text-sm font-medium text-emerald-700">
                 Economia gerada: R$ {economia.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+              </p>
+            )}
+
+            {erro && (
+              <p className="rounded-md border border-red-200 bg-red-50 p-2 text-sm font-medium text-red-700">
+                {erro}
               </p>
             )}
 

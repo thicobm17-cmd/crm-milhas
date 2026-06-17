@@ -4,45 +4,60 @@ import { prisma } from '@/lib/db'
 
 // Produtos do cliente: PASSAGEM, HOTEL, PASSEIO, SEGURO (conforme PDF Atlas)
 // economia = precoReferencia - precoAtlas (soma vitalicia na economia do cliente)
+function parseMoney(value: unknown) {
+  if (value === null || value === undefined || value === '') return 0
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0
+  return Number(String(value).replace(/\./g, '').replace(',', '.')) || 0
+}
+
 export async function POST(request: NextRequest) {
-  const session = await auth()
-  if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  try {
+    const session = await auth()
+    if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
 
-  const body = await request.json()
-  const {
-    clienteId, tipo, nome, status, local, origem, destino,
-    dataInicio, dataFim, dataFlexivel, classe, precoReferencia, precoAtlas,
-    responsavelId, observacoes,
-  } = body
+    const body = await request.json()
+    const {
+      clienteId, tipo, nome, status, local, origem, destino,
+      dataInicio, dataFim, dataFlexivel, classe, precoReferencia, precoAtlas,
+      responsavelId, observacoes,
+    } = body
 
-  if (!clienteId || !tipo) {
-    return NextResponse.json({ error: 'Cliente e tipo sao obrigatorios.' }, { status: 400 })
+    if (!clienteId || !tipo) {
+      return NextResponse.json({ error: 'Cliente e tipo sao obrigatorios.' }, { status: 400 })
+    }
+
+    const cliente = await prisma.cliente.findFirst({ where: { id: clienteId, gestorId: session.user.id } })
+    if (!cliente) return NextResponse.json({ error: 'Cliente nao encontrado.' }, { status: 404 })
+
+    const responsavel = responsavelId
+      ? await prisma.gestor.findUnique({ where: { id: responsavelId }, select: { id: true } })
+      : null
+
+    const produto = await prisma.produtoCliente.create({
+      data: {
+        clienteId,
+        tipo,
+        nome: nome || null,
+        status: status || 'EM_COTACAO',
+        local: local || null,
+        origem: origem || null,
+        destino: destino || null,
+        dataInicio: dataInicio ? new Date(dataInicio) : null,
+        dataFim: dataFim ? new Date(dataFim) : null,
+        dataFlexivel: dataFlexivel || null,
+        classe: classe || null,
+        precoReferencia: parseMoney(precoReferencia),
+        precoAtlas: parseMoney(precoAtlas),
+        responsavelId: responsavel?.id || session.user.id,
+        observacoes: observacoes || null,
+      },
+    })
+
+    return NextResponse.json({ id: produto.id })
+  } catch (error) {
+    console.error('Erro ao salvar produto do cliente:', error)
+    return NextResponse.json({ error: 'Erro ao salvar produto. Tente novamente.' }, { status: 500 })
   }
-
-  const cliente = await prisma.cliente.findFirst({ where: { id: clienteId, gestorId: session.user.id } })
-  if (!cliente) return NextResponse.json({ error: 'Cliente nao encontrado.' }, { status: 404 })
-
-  const produto = await prisma.produtoCliente.create({
-    data: {
-      clienteId,
-      tipo,
-      nome: nome || null,
-      status: status || 'EM_COTACAO',
-      local: local || null,
-      origem: origem || null,
-      destino: destino || null,
-      dataInicio: dataInicio ? new Date(dataInicio) : null,
-      dataFim: dataFim ? new Date(dataFim) : null,
-      dataFlexivel: dataFlexivel || null,
-      classe: classe || null,
-      precoReferencia: parseFloat(precoReferencia) || 0,
-      precoAtlas: parseFloat(precoAtlas) || 0,
-      responsavelId: responsavelId || session.user.id,
-      observacoes: observacoes || null,
-    },
-  })
-
-  return NextResponse.json({ id: produto.id })
 }
 
 export async function PATCH(request: NextRequest) {
