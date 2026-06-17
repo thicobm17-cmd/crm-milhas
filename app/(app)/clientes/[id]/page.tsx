@@ -245,7 +245,26 @@ export default async function ClienteDetalhePage({ params }: Props) {
                             {p.status === 'EMITIDO' ? 'Emitido' : 'Em cotacao'}
                           </Badge>
                         </div>
-                        <ProdutoActions id={p.id} status={p.status} />
+                        <ProdutoActions
+                          id={p.id}
+                          status={p.status}
+                          gestores={gestores}
+                          produto={{
+                            id: p.id,
+                            tipo: p.tipo,
+                            nome: p.nome ?? '',
+                            local: p.local ?? '',
+                            origem: p.origem ?? '',
+                            destino: p.destino ?? '',
+                            dataInicio: p.dataInicio ? p.dataInicio.toISOString().slice(0, 10) : '',
+                            dataFim: p.dataFim ? p.dataFim.toISOString().slice(0, 10) : '',
+                            classe: p.classe ?? 'Economica',
+                            precoReferencia: String(toNum(p.precoReferencia)),
+                            precoAtlas: String(toNum(p.precoAtlas)),
+                            responsavelId: p.responsavelId ?? '',
+                            observacoes: p.observacoes ?? '',
+                          }}
+                        />
                       </div>
                     </CardContent>
                   </Card>
