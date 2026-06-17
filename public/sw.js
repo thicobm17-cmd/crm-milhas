@@ -1,7 +1,9 @@
 const CACHE_PREFIX = 'atlas-crm'
-const CACHE_VERSION = 'v1'
+const CACHE_VERSION = 'v2'
 const STATIC_CACHE = `${CACHE_PREFIX}-static-${CACHE_VERSION}`
 const RUNTIME_CACHE = `${CACHE_PREFIX}-runtime-${CACHE_VERSION}`
+const NAVIGATION_TIMEOUT_MS = 3500
+const API_TIMEOUT_MS = 10000
 const STATIC_ASSETS = [
   '/manifest.webmanifest',
   '/favicon.ico',
@@ -38,8 +40,25 @@ self.addEventListener('activate', (event) => {
   )
 })
 
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting()
+  }
+})
+
 function isSameOrigin(request) {
   return new URL(request.url).origin === self.location.origin
+}
+
+async function fetchWithTimeout(request, timeoutMs) {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+
+  try {
+    return await fetch(request, { signal: controller.signal })
+  } finally {
+    clearTimeout(timeout)
+  }
 }
 
 async function saveResponse(request, response) {
@@ -50,9 +69,9 @@ async function saveResponse(request, response) {
   return response
 }
 
-async function networkFirst(request) {
+async function networkFirst(request, timeoutMs = API_TIMEOUT_MS) {
   try {
-    const response = await fetch(request)
+    const response = await fetchWithTimeout(request, timeoutMs)
     return saveResponse(request, response)
   } catch {
     const cached = await caches.match(request)
@@ -90,8 +109,13 @@ self.addEventListener('fetch', (event) => {
   const isStaticAsset = ['style', 'script', 'font', 'image', 'manifest'].includes(request.destination) ||
     url.pathname.startsWith('/_next/static/')
 
-  if (request.mode === 'navigate' || url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request))
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirst(request, NAVIGATION_TIMEOUT_MS))
+    return
+  }
+
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(networkFirst(request, API_TIMEOUT_MS))
     return
   }
 
