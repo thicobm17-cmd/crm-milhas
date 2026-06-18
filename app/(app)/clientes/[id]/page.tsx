@@ -128,6 +128,8 @@ export default async function ClienteDetalhePage({ params }: Props) {
             dataNascimento: cliente.dataNascimento ? cliente.dataNascimento.toISOString().slice(0, 10) : null,
             produtoContratado: cliente.produtoContratado,
             metaEconomia,
+            acessoInicio: cliente.acessoInicio ? cliente.acessoInicio.toISOString().slice(0, 10) : null,
+            acessoFim: cliente.acessoFim ? cliente.acessoFim.toISOString().slice(0, 10) : null,
             observacoes: cliente.observacoes,
             fotoUrl: cliente.fotoUrl,
             ativo: cliente.ativo,

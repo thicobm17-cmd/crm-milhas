@@ -21,6 +21,8 @@ interface ClienteData {
   dataNascimento: string | null
   produtoContratado: string | null
   metaEconomia: number
+  acessoInicio: string | null
+  acessoFim: string | null
   observacoes: string | null
   fotoUrl: string | null
   ativo: boolean
@@ -96,6 +98,8 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
     produtoContratado: cliente.produtoContratado ?? '',
     valorProduto: cliente.metaEconomia ? String(cliente.metaEconomia) : '',
     valorModo: 'outro',
+    acessoInicio: cliente.acessoInicio ?? '',
+    acessoFim: cliente.acessoFim ?? '',
     observacoes: cliente.observacoes ?? '',
     fotoUrl: cliente.fotoUrl ?? '',
   })
@@ -259,6 +263,14 @@ export function ClienteActions({ cliente }: { cliente: ClienteData }) {
               <div className="space-y-2">
                 <Label>Data de nascimento</Label>
                 <Input type="date" value={form.dataNascimento} onChange={e => update('dataNascimento', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Inicio da gestao</Label>
+                <Input type="date" value={form.acessoInicio} onChange={e => update('acessoInicio', e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Acesso ate</Label>
+                <Input type="date" value={form.acessoFim} onChange={e => update('acessoFim', e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Valor investido</Label>

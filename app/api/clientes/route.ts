@@ -13,6 +13,15 @@ function validateFotoUrl(fotoUrl: unknown) {
   return fotoUrl
 }
 
+function parseDateOnly(value: unknown) {
+  if (value === undefined) return undefined
+  if (!value) return null
+  if (typeof value !== 'string') return null
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  if (!match) return null
+  return new Date(`${match[1]}-${match[2]}-${match[3]}T12:00:00.000Z`)
+}
+
 export async function GET() {
   const session = await auth()
   if (!session) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
@@ -104,8 +113,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   // Edicao geral dos dados do cliente
-  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, observacoes, fotoUrl } = body
+  const { nome, email, telefone, cpf, dataNascimento, produtoContratado, valorProduto, acessoInicio, acessoFim, observacoes, fotoUrl } = body
   const valorInvestido = valorProduto !== undefined && valorProduto !== '' ? parseFloat(valorProduto) : undefined
+  const acessoInicioAtualizado = parseDateOnly(acessoInicio)
+  const acessoFimAtualizado = parseDateOnly(acessoFim)
   let fotoValidada: string | null | undefined
   try {
     fotoValidada = validateFotoUrl(fotoUrl)
@@ -123,6 +134,8 @@ export async function PATCH(request: NextRequest) {
       ...(dataNascimento !== undefined ? { dataNascimento: dataNascimento ? new Date(dataNascimento) : null } : {}),
       ...(produtoContratado !== undefined ? { produtoContratado: produtoContratado || null } : {}),
       ...(valorInvestido !== undefined && !Number.isNaN(valorInvestido) ? { metaEconomia: valorInvestido } : {}),
+      ...(acessoInicioAtualizado !== undefined ? { acessoInicio: acessoInicioAtualizado } : {}),
+      ...(acessoFimAtualizado !== undefined ? { acessoFim: acessoFimAtualizado } : {}),
       ...(observacoes !== undefined ? { observacoes: observacoes || null } : {}),
       ...(fotoValidada !== undefined ? { fotoUrl: fotoValidada } : {}),
     },
